@@ -1,69 +1,31 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Upload, FileText, Calendar, Loader2, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Calendar } from "lucide-react";
 import { VisitList } from "@/components/visits/visit-list";
 import { AddVisitDialog } from "@/components/visits/add-visit-dialog";
-import { usePatient } from "@/lib/hooks/use-patients";
-import { useVisits } from "@/lib/hooks/use-visits";
-import { format } from "date-fns";
 
 export default function PatientDetailPage() {
   const params = useParams();
-  const patientId = params.id as string;
+  const patientId = params.patientId as string;
   const [isAddVisitOpen, setIsAddVisitOpen] = useState(false);
 
-  const { patient, isLoading: patientLoading, isError: patientError } = usePatient(patientId);
-  const { visits, isLoading: visitsLoading, mutate: refreshVisits } = useVisits(patientId);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const totalVisits = visits?.length || 0;
-    const totalXrays = visits?.reduce((acc, visit) => acc + (visit.xrays?.length || 0), 0) || 0;
-    // Reports would come from analysis_results table - for now hardcoded to 0
-    const totalReports = 0;
-
-    return { totalVisits, totalXrays, totalReports };
-  }, [visits]);
-
-  const handleVisitAdded = () => {
-    refreshVisits();
+  // TODO: Fetch patient data from Supabase
+  const patient = {
+    id: patientId,
+    patientId: "P-12345",
+    firstName: "John",
+    lastName: "Doe",
+    dateOfBirth: "1980-05-15",
+    email: "john.doe@example.com",
+    phone: "(555) 123-4567",
+    isSmoker: false,
+    hasDiabetes: false,
   };
-
-  if (patientLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-          <p className="mt-4 text-gray-600">Loading patient...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (patientError || !patient) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Card className="p-8 text-center max-w-md">
-          <AlertCircle className="h-12 w-12 mx-auto text-red-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Patient Not Found</h2>
-          <p className="text-gray-600 mb-4">
-            The patient you&apos;re looking for doesn&apos;t exist or you don&apos;t have access to it.
-          </p>
-          <Link href="/dashboard/patients">
-            <Button>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Patients
-            </Button>
-          </Link>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div>
@@ -81,9 +43,9 @@ export default function PatientDetailPage() {
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-2xl">
-                {patient.first_name} {patient.last_name}
+                {patient.firstName} {patient.lastName}
               </CardTitle>
-              <p className="text-gray-600 mt-1">Patient ID: {patient.patient_id}</p>
+              <p className="text-gray-600 mt-1">Patient ID: {patient.patientId}</p>
             </div>
             <Button variant="outline">Edit Patient</Button>
           </div>
@@ -95,7 +57,7 @@ export default function PatientDetailPage() {
               <dl className="space-y-2 text-sm">
                 <div className="flex">
                   <dt className="w-32 text-gray-600">Date of Birth:</dt>
-                  <dd className="font-medium">{format(new Date(patient.date_of_birth), 'MMM dd, yyyy')}</dd>
+                  <dd className="font-medium">{patient.dateOfBirth}</dd>
                 </div>
                 <div className="flex">
                   <dt className="w-32 text-gray-600">Email:</dt>
@@ -113,18 +75,18 @@ export default function PatientDetailPage() {
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${
-                      patient.is_smoker ? "bg-red-500" : "bg-gray-300"
+                      patient.isSmoker ? "bg-red-500" : "bg-gray-300"
                     }`}
                   ></span>
-                  <span>Smoker: {patient.is_smoker ? "Yes" : "No"}</span>
+                  <span>Smoker: {patient.isSmoker ? "Yes" : "No"}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full ${
-                      patient.has_diabetes ? "bg-red-500" : "bg-gray-300"
+                      patient.hasDiabetes ? "bg-red-500" : "bg-gray-300"
                     }`}
                   ></span>
-                  <span>Diabetes: {patient.has_diabetes ? "Yes" : "No"}</span>
+                  <span>Diabetes: {patient.hasDiabetes ? "Yes" : "No"}</span>
                 </div>
               </div>
             </div>
@@ -140,11 +102,7 @@ export default function PatientDetailPage() {
               <Calendar className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">Total Visits</p>
-                {visitsLoading ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                ) : (
-                  <p className="text-2xl font-bold">{stats.totalVisits}</p>
-                )}
+                <p className="text-2xl font-bold">0</p>
               </div>
             </div>
           </CardContent>
@@ -156,11 +114,7 @@ export default function PatientDetailPage() {
               <Upload className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">X-rays Uploaded</p>
-                {visitsLoading ? (
-                  <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-                ) : (
-                  <p className="text-2xl font-bold">{stats.totalXrays}</p>
-                )}
+                <p className="text-2xl font-bold">0</p>
               </div>
             </div>
           </CardContent>
@@ -172,7 +126,7 @@ export default function PatientDetailPage() {
               <FileText className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">Reports Generated</p>
-                <p className="text-2xl font-bold">{stats.totalReports}</p>
+                <p className="text-2xl font-bold">0</p>
               </div>
             </div>
           </CardContent>
@@ -200,7 +154,6 @@ export default function PatientDetailPage() {
         patientId={patientId}
         open={isAddVisitOpen}
         onOpenChange={setIsAddVisitOpen}
-        onSuccess={handleVisitAdded}
       />
     </div>
   );
