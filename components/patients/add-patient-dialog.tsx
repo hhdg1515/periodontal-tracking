@@ -24,7 +24,6 @@ interface AddPatientDialogProps {
 
 export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDialogProps) {
   const [formData, setFormData] = useState({
-    patientId: "",
     firstName: "",
     lastName: "",
     dateOfBirth: "",
@@ -42,9 +41,13 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
     setError(null);
 
     try {
+      // Auto-generate patient ID from first name, last name, and timestamp
+      const timestamp = Date.now().toString().slice(-6);
+      const patientId = `${formData.firstName.charAt(0)}${formData.lastName.charAt(0)}-${timestamp}`.toUpperCase();
+
       await patientsService.create({
         clinic_id: DEMO_CLINIC_ID,
-        patient_id: formData.patientId,
+        patient_id: patientId,
         first_name: formData.firstName,
         last_name: formData.lastName,
         date_of_birth: formData.dateOfBirth,
@@ -56,7 +59,6 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
 
       // Reset form and close dialog
       setFormData({
-        patientId: "",
         firstName: "",
         lastName: "",
         dateOfBirth: "",
@@ -93,24 +95,6 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
                 {error}
               </div>
             )}
-
-            {/* Patient ID */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="patientId" className="text-right">
-                Patient ID *
-              </Label>
-              <Input
-                id="patientId"
-                className="col-span-3"
-                value={formData.patientId}
-                onChange={(e) =>
-                  setFormData({ ...formData, patientId: e.target.value })
-                }
-                placeholder="e.g., P-12345"
-                required
-                disabled={isSubmitting}
-              />
-            </div>
 
             {/* First Name */}
             <div className="grid grid-cols-4 items-center gap-4">
