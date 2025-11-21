@@ -12,13 +12,17 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { patientsService } from "@/lib/supabase/patients-service";
+import { DEMO_CLINIC_ID } from "@/lib/hooks/use-patients";
 
 interface AddPatientDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSuccess?: () => void;
 }
 
-export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) {
+export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDialogProps) {
   const [formData, setFormData] = useState({
     patientId: "",
     firstName: "",
@@ -29,28 +33,47 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
     isSmoker: false,
     hasDiabetes: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
 
-    // TODO: Integrate with Supabase
-    console.log("Adding patient:", formData);
+    try {
+      await patientsService.create({
+        clinic_id: DEMO_CLINIC_ID,
+        patient_id: formData.patientId,
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        date_of_birth: formData.dateOfBirth,
+        email: formData.email || null,
+        phone: formData.phone || null,
+        is_smoker: formData.isSmoker,
+        has_diabetes: formData.hasDiabetes,
+      });
 
-    // For now, just show an alert
-    alert("Patient added successfully! (Note: Database not connected yet)");
+      // Reset form and close dialog
+      setFormData({
+        patientId: "",
+        firstName: "",
+        lastName: "",
+        dateOfBirth: "",
+        email: "",
+        phone: "",
+        isSmoker: false,
+        hasDiabetes: false,
+      });
 
-    // Reset form and close dialog
-    setFormData({
-      patientId: "",
-      firstName: "",
-      lastName: "",
-      dateOfBirth: "",
-      email: "",
-      phone: "",
-      isSmoker: false,
-      hasDiabetes: false,
-    });
-    onOpenChange(false);
+      onOpenChange(false);
+      onSuccess?.();
+    } catch (err: any) {
+      console.error("Error creating patient:", err);
+      setError(err.message || "Failed to create patient. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -65,6 +88,12 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
+            {error && (
+              <div className="col-span-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+                {error}
+              </div>
+            )}
+
             {/* Patient ID */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="patientId" className="text-right">
@@ -79,6 +108,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                 }
                 placeholder="e.g., P-12345"
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -95,6 +125,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                   setFormData({ ...formData, firstName: e.target.value })
                 }
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -111,6 +142,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                   setFormData({ ...formData, lastName: e.target.value })
                 }
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -128,6 +160,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                   setFormData({ ...formData, dateOfBirth: e.target.value })
                 }
                 required
+                disabled={isSubmitting}
               />
             </div>
 
@@ -145,6 +178,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                   setFormData({ ...formData, email: e.target.value })
                 }
                 placeholder="patient@example.com"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -162,6 +196,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                   setFormData({ ...formData, phone: e.target.value })
                 }
                 placeholder="(123) 456-7890"
+                disabled={isSubmitting}
               />
             </div>
 
@@ -178,6 +213,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                       setFormData({ ...formData, isSmoker: e.target.checked })
                     }
                     className="rounded"
+                    disabled={isSubmitting}
                   />
                   <Label htmlFor="isSmoker" className="font-normal">
                     Smoker
@@ -195,6 +231,7 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
                       })
                     }
                     className="rounded"
+                    disabled={isSubmitting}
                   />
                   <Label htmlFor="hasDiabetes" className="font-normal">
                     Diabetes
@@ -205,10 +242,18 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button type="submit">Add Patient</Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {isSubmitting ? "Adding..." : "Add Patient"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

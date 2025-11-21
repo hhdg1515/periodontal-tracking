@@ -12,8 +12,8 @@ PerioTrack AI helps dentists:
 
 ## 🚀 Features (MVP v1.0)
 
-### ✅ Implemented
-- **Patient Management** - Add, view, and manage patient records
+### ✅ Phase 1 - UI/UX (Week 1-4) - COMPLETED
+- **Patient Management** - Add, view, and manage patient records with full CRUD
 - **Visit Tracking** - Organize X-rays by visit date
 - **X-Ray Upload** - Drag-and-drop interface for uploading X-rays (Bitewing, Periapical, Panoramic)
 - **Side-by-Side Comparison** - Visual comparison of historical X-rays
@@ -21,14 +21,24 @@ PerioTrack AI helps dentists:
 - **Patient Reports** - Beautiful, easy-to-understand reports for patients
 - **Doctor Reports** - Detailed clinical reports
 
-### 🔄 In Progress
-- AI-powered bone loss detection
-- PDF generation and export
-- Authentication and multi-clinic support
+### ✅ Phase 2 - Supabase Integration (Week 5-6) - COMPLETED
+- **Database Connection** - Full Supabase PostgreSQL integration
+- **Patient CRUD** - Real-time patient data management
+- **Visit Management** - Complete visit and X-ray tracking
+- **File Storage** - Supabase Storage for X-ray images
+- **Data Fetching** - SWR-powered hooks for optimal performance
+- **Loading States** - Proper loading and error handling throughout
+- **Optimistic Updates** - Smooth UI with automatic data refresh
 
-### 📝 Planned (Phase 2)
+### 🔄 Phase 3 - In Progress (Week 7-8)
+- AI-powered bone loss detection
+- Automated analysis pipeline
+- PDF generation and export
+
+### 📝 Planned (Phase 4+)
 - Advanced AI analysis with SAM/U-Net models
 - Treatment outcome tracking
+- Authentication and multi-clinic support
 - Multi-language support
 - Mobile app
 
@@ -73,9 +83,9 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 \`\`\`
 
-4. Set up the database:
-   - Go to your Supabase project
-   - Run the SQL in \`lib/supabase/schema.sql\` in the SQL editor
+4. Set up Supabase:
+   - Follow the detailed guide in **[SUPABASE_SETUP.md](./SUPABASE_SETUP.md)**
+   - This includes database schema, storage bucket, and demo data
 
 5. Start the development server:
 \`\`\`bash

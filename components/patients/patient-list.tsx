@@ -1,42 +1,49 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Calendar, AlertCircle } from "lucide-react";
-
-interface Patient {
-  id: string;
-  patientId: string;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  lastVisit?: string;
-  riskLevel?: "low" | "medium" | "high";
-}
+import { Eye, Calendar, AlertCircle, Loader2 } from "lucide-react";
+import { usePatients } from "@/lib/hooks/use-patients";
+import { format } from "date-fns";
 
 interface PatientListProps {
   searchQuery: string;
 }
 
 export function PatientList({ searchQuery }: PatientListProps) {
-  const [patients, setPatients] = useState<Patient[]>([]);
-
-  useEffect(() => {
-    // TODO: Fetch from Supabase
-    // For now, use mock data
-    setPatients([]);
-  }, []);
+  const { patients, isLoading, isError } = usePatients();
 
   const filteredPatients = patients.filter((patient) => {
+    if (!searchQuery) return true;
     const query = searchQuery.toLowerCase();
     return (
-      patient.firstName.toLowerCase().includes(query) ||
-      patient.lastName.toLowerCase().includes(query) ||
-      patient.patientId.toLowerCase().includes(query)
+      patient.first_name.toLowerCase().includes(query) ||
+      patient.last_name.toLowerCase().includes(query) ||
+      patient.patient_id.toLowerCase().includes(query)
     );
   });
+
+  if (isLoading) {
+    return (
+      <Card className="p-12 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
+        <p className="mt-4 text-gray-600">Loading patients...</p>
+      </Card>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="p-12 text-center">
+        <AlertCircle className="h-8 w-8 mx-auto text-red-600" />
+        <p className="mt-4 text-red-600 font-semibold">Error loading patients</p>
+        <p className="mt-2 text-sm text-gray-600">
+          Please check your Supabase configuration in .env.local
+        </p>
+      </Card>
+    );
+  }
 
   if (patients.length === 0) {
     return (
@@ -70,42 +77,23 @@ export function PatientList({ searchQuery }: PatientListProps) {
               <div className="flex items-center gap-3">
                 <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
                   <span className="text-lg font-semibold text-blue-600">
-                    {patient.firstName[0]}
-                    {patient.lastName[0]}
+                    {patient.first_name[0]}
+                    {patient.last_name[0]}
                   </span>
                 </div>
                 <div>
                   <h3 className="text-lg font-semibold">
-                    {patient.firstName} {patient.lastName}
+                    {patient.first_name} {patient.last_name}
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>ID: {patient.patientId}</span>
-                    <span>DOB: {patient.dateOfBirth}</span>
-                    {patient.lastVisit && (
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        Last visit: {patient.lastVisit}
-                      </span>
-                    )}
+                    <span>ID: {patient.patient_id}</span>
+                    <span>DOB: {format(new Date(patient.date_of_birth), 'MMM dd, yyyy')}</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="flex items-center gap-2">
-              {patient.riskLevel && (
-                <span
-                  className={`px-2 py-1 rounded text-xs font-medium ${
-                    patient.riskLevel === "high"
-                      ? "bg-red-100 text-red-700"
-                      : patient.riskLevel === "medium"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : "bg-green-100 text-green-700"
-                  }`}
-                >
-                  {patient.riskLevel.toUpperCase()} RISK
-                </span>
-              )}
               <Link href={`/dashboard/patients/${patient.id}`}>
                 <Button variant="outline" size="sm">
                   <Eye className="h-4 w-4 mr-2" />
