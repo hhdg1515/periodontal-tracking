@@ -20,7 +20,6 @@ interface AddPatientDialogProps {
 
 export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) {
   const [formData, setFormData] = useState({
-    patientId: "",
     firstName: "",
     lastName: "",
     dateOfBirth: "",
@@ -41,7 +40,6 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
 
     // Reset form and close dialog
     setFormData({
-      patientId: "",
       firstName: "",
       lastName: "",
       dateOfBirth: "",
@@ -65,23 +63,6 @@ export function AddPatientDialog({ open, onOpenChange }: AddPatientDialogProps) 
 
         <form onSubmit={handleSubmit}>
           <div className="grid gap-4 py-4">
-            {/* Patient ID */}
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="patientId" className="text-right">
-                Patient ID *
-              </Label>
-              <Input
-                id="patientId"
-                className="col-span-3"
-                value={formData.patientId}
-                onChange={(e) =>
-                  setFormData({ ...formData, patientId: e.target.value })
-                }
-                placeholder="e.g., P-12345"
-                required
-              />
-            </div>
-
             {/* First Name */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="firstName" className="text-right">
