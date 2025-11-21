@@ -1,0 +1,69 @@
+import Link from "next/link";
+import { Activity, Users, FolderOpen, BarChart3, Settings } from "lucide-react";
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Top Navigation */}
+      <nav className="bg-white border-b">
+        <div className="px-4 py-3 flex justify-between items-center">
+          <Link href="/dashboard" className="flex items-center space-x-2">
+            <Activity className="h-6 w-6 text-blue-600" />
+            <span className="text-xl font-bold text-gray-900">PerioTrack AI</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">Demo Clinic</span>
+            <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
+              <span className="text-sm font-medium text-blue-600">DC</span>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="flex">
+        {/* Sidebar */}
+        <aside className="w-64 bg-white border-r min-h-[calc(100vh-57px)]">
+          <nav className="p-4 space-y-1">
+            <Link
+              href="/dashboard"
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+            >
+              <BarChart3 className="h-5 w-5" />
+              <span>Dashboard</span>
+            </Link>
+            <Link
+              href="/dashboard/patients"
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-600"
+            >
+              <Users className="h-5 w-5" />
+              <span>Patients</span>
+            </Link>
+            <Link
+              href="/dashboard/analyses"
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+            >
+              <FolderOpen className="h-5 w-5" />
+              <span>Analyses</span>
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+            >
+              <Settings className="h-5 w-5" />
+              <span>Settings</span>
+            </Link>
+          </nav>
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+}
