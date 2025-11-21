@@ -1,16 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft, FileText } from "lucide-react";
 import Link from "next/link";
 import { XRayComparisonViewer } from "@/components/comparison/xray-comparison-viewer";
 import { AnalysisPanel } from "@/components/comparison/analysis-panel";
+import { useXRay } from "@/lib/hooks/use-xrays-for-comparison";
 
 export default function ComparePage() {
+  const searchParams = useSearchParams();
+  const xrayId = searchParams.get('xray');
+  const patientId = searchParams.get('patient');
+
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(patientId);
   const [selectedBaseline, setSelectedBaseline] = useState<string | null>(null);
   const [selectedCurrent, setSelectedCurrent] = useState<string | null>(null);
+
+  // If xray ID is provided in URL, fetch it and set as current
+  const { xray } = useXRay(xrayId);
+
+  useEffect(() => {
+    if (xray) {
+      setSelectedCurrent(xray.id);
+      // @ts-ignore - visit is included in the query
+      if (xray.visit?.patient_id) {
+        // @ts-ignore
+        setSelectedPatientId(xray.visit.patient_id);
+      }
+    }
+  }, [xray]);
 
   return (
     <div>
@@ -34,6 +55,7 @@ export default function ComparePage() {
         {/* Comparison Viewer - 2 columns */}
         <div className="lg:col-span-2">
           <XRayComparisonViewer
+            patientId={selectedPatientId}
             baselineId={selectedBaseline}
             currentId={selectedCurrent}
             onSelectBaseline={setSelectedBaseline}

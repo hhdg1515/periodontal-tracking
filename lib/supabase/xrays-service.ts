@@ -99,8 +99,8 @@ export const xraysService = {
     if (error) throw error;
   },
 
-  // Get X-rays for comparison (by patient)
-  async getForComparison(patientId: string) {
+  // Get all X-rays for a patient
+  async getByPatientId(patientId: string) {
     const { data, error } = await supabase
       .from('xrays')
       .select(`
@@ -116,5 +116,10 @@ export const xraysService = {
 
     if (error) throw error;
     return data;
+  },
+
+  // Get X-rays for comparison (by patient) - alias for getByPatientId
+  async getForComparison(patientId: string) {
+    return this.getByPatientId(patientId);
   },
 };
