@@ -2,43 +2,36 @@
 
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, X, CheckCircle } from "lucide-react";
+import { Upload, X, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { xraysService } from "@/lib/supabase/xrays-service";
 
 interface XRayUploaderProps {
   visitId: string;
+  onUploadComplete?: () => void;
 }
 
 interface UploadedFile {
   file: File;
   preview: string;
   type: string;
-  status: "uploading" | "success" | "error";
+  status: "pending" | "uploading" | "success" | "error";
+  errorMessage?: string;
 }
 
-export function XRayUploader({ visitId }: XRayUploaderProps) {
+export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
+  const [isSaving, setIsSaving] = useState(false);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => ({
       file,
       preview: URL.createObjectURL(file),
       type: "bitewing_right", // Default type
-      status: "uploading" as const,
+      status: "pending" as const,
     }));
 
     setFiles((prev) => [...prev, ...newFiles]);
-
-    // Simulate upload
-    newFiles.forEach((uploadedFile, index) => {
-      setTimeout(() => {
-        setFiles((prev) =>
-          prev.map((f) =>
-            f.file === uploadedFile.file ? { ...f, status: "success" as const } : f
-          )
-        );
-      }, 1000 + index * 500);
-    });
   }, []);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -47,6 +40,7 @@ export function XRayUploader({ visitId }: XRayUploaderProps) {
       "image/*": [".png", ".jpg", ".jpeg", ".dcm"],
     },
     multiple: true,
+    maxSize: 50 * 1024 * 1024, // 50MB max
   });
 
   const removeFile = (fileToRemove: UploadedFile) => {
@@ -59,6 +53,68 @@ export function XRayUploader({ visitId }: XRayUploaderProps) {
       prev.map((f) => (f === file ? { ...f, type } : f))
     );
   };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+
+    try {
+      // Upload all files in parallel
+      const uploadPromises = files.map(async (uploadedFile, index) => {
+        try {
+          // Update status to uploading
+          setFiles((prev) =>
+            prev.map((f) =>
+              f === uploadedFile ? { ...f, status: "uploading" as const } : f
+            )
+          );
+
+          await xraysService.uploadAndCreate(
+            uploadedFile.file,
+            visitId,
+            uploadedFile.type
+          );
+
+          // Update status to success
+          setFiles((prev) =>
+            prev.map((f) =>
+              f === uploadedFile ? { ...f, status: "success" as const } : f
+            )
+          );
+        } catch (error: any) {
+          console.error("Error uploading file:", error);
+          // Update status to error
+          setFiles((prev) =>
+            prev.map((f) =>
+              f === uploadedFile
+                ? {
+                    ...f,
+                    status: "error" as const,
+                    errorMessage: error.message || "Upload failed",
+                  }
+                : f
+            )
+          );
+        }
+      });
+
+      await Promise.all(uploadPromises);
+
+      // Check if all uploads were successful
+      const allSuccess = files.every((f) => f.status === "success");
+      if (allSuccess) {
+        // Clear files and notify parent
+        setFiles([]);
+        onUploadComplete?.();
+      }
+    } catch (error) {
+      console.error("Error in upload process:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const canSave = files.length > 0 && !isSaving;
+  const hasErrors = files.some((f) => f.status === "error");
 
   return (
     <div>
@@ -81,7 +137,7 @@ export function XRayUploader({ visitId }: XRayUploaderProps) {
               Drag and drop X-ray images here
             </p>
             <p className="text-sm text-gray-500">
-              or click to select files (PNG, JPG, JPEG, DICOM)
+              or click to select files (PNG, JPG, JPEG, DICOM - max 50MB)
             </p>
           </>
         )}
@@ -90,7 +146,7 @@ export function XRayUploader({ visitId }: XRayUploaderProps) {
       {/* File List */}
       {files.length > 0 && (
         <div className="mt-6 space-y-4">
-          <h3 className="font-semibold">Uploaded Files ({files.length})</h3>
+          <h3 className="font-semibold">Files to Upload ({files.length})</h3>
           <div className="grid gap-4">
             {files.map((uploadedFile, index) => (
               <div
@@ -116,42 +172,74 @@ export function XRayUploader({ visitId }: XRayUploaderProps) {
                     value={uploadedFile.type}
                     onChange={(e) => updateFileType(uploadedFile, e.target.value)}
                     className="mt-2 text-sm border rounded px-2 py-1"
-                    disabled={uploadedFile.status === "uploading"}
+                    disabled={uploadedFile.status !== "pending"}
                   >
                     <option value="bitewing_right">Bitewing Right</option>
                     <option value="bitewing_left">Bitewing Left</option>
                     <option value="periapical">Periapical</option>
                     <option value="panoramic">Panoramic</option>
                   </select>
+
+                  {uploadedFile.status === "error" && uploadedFile.errorMessage && (
+                    <p className="text-xs text-red-600 mt-1">
+                      {uploadedFile.errorMessage}
+                    </p>
+                  )}
                 </div>
 
                 {/* Status */}
                 <div className="flex items-center gap-2">
+                  {uploadedFile.status === "pending" && (
+                    <span className="text-sm text-gray-500">Ready</span>
+                  )}
                   {uploadedFile.status === "uploading" && (
-                    <div className="text-sm text-gray-500">Uploading...</div>
+                    <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
                   )}
                   {uploadedFile.status === "success" && (
                     <CheckCircle className="h-5 w-5 text-green-500" />
                   )}
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => removeFile(uploadedFile)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
+                  {uploadedFile.status === "error" && (
+                    <AlertCircle className="h-5 w-5 text-red-500" />
+                  )}
+                  {uploadedFile.status === "pending" && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => removeFile(uploadedFile)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
 
           {/* Save Button */}
-          <Button
-            className="w-full"
-            disabled={files.some((f) => f.status === "uploading")}
-          >
-            Save X-Rays to Visit
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              className="flex-1"
+              onClick={handleSave}
+              disabled={!canSave}
+            >
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                "Upload X-Rays to Supabase"
+              )}
+            </Button>
+            {hasErrors && (
+              <Button
+                variant="outline"
+                onClick={() => setFiles(files.filter((f) => f.status !== "success"))}
+              >
+                Clear Successful
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>
