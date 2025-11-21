@@ -6,10 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Plus, Search } from "lucide-react";
 import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
 import { PatientList } from "@/components/patients/patient-list";
+import { usePatients } from "@/lib/hooks/use-patients";
 
 export default function PatientsPage() {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const { mutate } = usePatients();
+
+  const handlePatientAdded = () => {
+    // Refresh the patient list after adding a new patient
+    mutate();
+  };
 
   return (
     <div>
@@ -41,6 +48,7 @@ export default function PatientsPage() {
       <AddPatientDialog
         open={isAddDialogOpen}
         onOpenChange={setIsAddDialogOpen}
+        onSuccess={handlePatientAdded}
       />
     </div>
   );

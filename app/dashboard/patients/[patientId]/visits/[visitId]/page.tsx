@@ -1,26 +1,52 @@
 "use client";
 
-import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Upload } from "lucide-react";
+import { ArrowLeft, Upload, Loader2, AlertCircle } from "lucide-react";
 import { XRayUploader } from "@/components/xrays/xray-uploader";
 import { XRayGallery } from "@/components/xrays/xray-gallery";
+import { useVisit } from "@/lib/hooks/use-visits";
+import { format } from "date-fns";
 
 export default function VisitDetailPage() {
   const params = useParams();
   const patientId = params.patientId as string;
   const visitId = params.visitId as string;
 
-  // TODO: Fetch visit data from Supabase
-  const visit = {
-    id: visitId,
-    visitDate: "2024-01-25",
-    visitType: "Follow-up",
-    notes: "6-month checkup",
-  };
+  const { visit, isLoading, isError, mutate } = useVisit(visitId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
+          <p className="mt-4 text-gray-600">Loading visit...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (isError || !visit) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Card className="p-8 text-center max-w-md">
+          <AlertCircle className="h-12 w-12 mx-auto text-red-600 mb-4" />
+          <h2 className="text-xl font-semibold mb-2">Visit Not Found</h2>
+          <p className="text-gray-600 mb-4">
+            The visit you&apos;re looking for doesn&apos;t exist.
+          </p>
+          <Link href={`/dashboard/patients/${patientId}`}>
+            <Button>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to Patient
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -38,10 +64,12 @@ export default function VisitDetailPage() {
           <div className="flex justify-between items-start">
             <div>
               <CardTitle className="text-2xl">Visit Details</CardTitle>
-              <p className="text-gray-600 mt-1">{visit.visitDate}</p>
+              <p className="text-gray-600 mt-1">
+                {format(new Date(visit.visit_date), 'MMMM dd, yyyy')}
+              </p>
             </div>
-            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded">
-              {visit.visitType}
+            <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded capitalize">
+              {visit.visit_type.replace('_', ' ')}
             </span>
           </div>
         </CardHeader>
@@ -64,7 +92,7 @@ export default function VisitDetailPage() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <XRayUploader visitId={visitId} />
+          <XRayUploader visitId={visitId} onUploadComplete={() => mutate()} />
         </CardContent>
       </Card>
 

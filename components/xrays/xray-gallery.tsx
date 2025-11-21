@@ -1,30 +1,66 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Eye, Download, Trash2 } from "lucide-react";
+import { Eye, Download, Trash2, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
-
-interface XRay {
-  id: string;
-  type: string;
-  url: string;
-  uploadDate: string;
-}
+import { useXRays } from "@/lib/hooks/use-xrays";
+import { xraysService } from "@/lib/supabase/xrays-service";
+import { format } from "date-fns";
 
 interface XRayGalleryProps {
   visitId: string;
 }
 
 export function XRayGallery({ visitId }: XRayGalleryProps) {
-  const [xrays, setXrays] = useState<XRay[]>([]);
+  const { xrays, isLoading, isError, mutate } = useXRays(visitId);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    // TODO: Fetch X-rays from Supabase
-    setXrays([]);
-  }, [visitId]);
+  const handleDelete = async (xrayId: string) => {
+    if (!confirm("Are you sure you want to delete this X-ray? This action cannot be undone.")) {
+      return;
+    }
 
-  if (xrays.length === 0) {
+    setDeletingId(xrayId);
+    try {
+      await xraysService.delete(xrayId);
+      mutate(); // Refresh the list
+    } catch (error) {
+      console.error("Error deleting X-ray:", error);
+      alert("Failed to delete X-ray. Please try again.");
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDownload = (url: string, filename: string) => {
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
+        <p className="mt-4 text-gray-600">Loading X-rays...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="text-center py-12">
+        <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-2" />
+        <p className="text-red-600">Error loading X-rays</p>
+      </div>
+    );
+  }
+
+  if (!xrays || xrays.length === 0) {
     return (
       <div className="text-center py-12 text-gray-600">
         <p>No X-rays uploaded yet</p>
@@ -43,20 +79,33 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
           {/* Image */}
           <div className="aspect-square bg-gray-100 relative">
             <img
-              src={xray.url}
-              alt={xray.type}
+              src={xray.file_url}
+              alt={xray.xray_type}
               className="w-full h-full object-cover"
             />
+            {/* Analysis Status Badge */}
+            {xray.analysis_status === "pending" && (
+              <span className="absolute top-2 right-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">
+                Pending Analysis
+              </span>
+            )}
+            {xray.analysis_status === "completed" && (
+              <span className="absolute top-2 right-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
+                Analyzed
+              </span>
+            )}
           </div>
 
           {/* Info */}
           <div className="p-4">
             <div className="flex justify-between items-start mb-3">
               <div>
-                <h4 className="font-semibold text-sm">
-                  {xray.type.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())}
+                <h4 className="font-semibold text-sm capitalize">
+                  {xray.xray_type.replace(/_/g, " ")}
                 </h4>
-                <p className="text-xs text-gray-500">{xray.uploadDate}</p>
+                <p className="text-xs text-gray-500">
+                  {format(new Date(xray.upload_date), 'MMM dd, yyyy HH:mm')}
+                </p>
               </div>
             </div>
 
@@ -68,11 +117,26 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
                   Compare
                 </Button>
               </Link>
-              <Button variant="ghost" size="sm">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDownload(xray.file_url, `xray-${xray.id}.jpg`)}
+                title="Download X-ray"
+              >
                 <Download className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm">
-                <Trash2 className="h-4 w-4 text-red-500" />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDelete(xray.id)}
+                disabled={deletingId === xray.id}
+                title="Delete X-ray"
+              >
+                {deletingId === xray.id ? (
+                  <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                ) : (
+                  <Trash2 className="h-4 w-4 text-red-500" />
+                )}
               </Button>
             </div>
           </div>
