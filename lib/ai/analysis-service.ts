@@ -1,230 +1,163 @@
 import Anthropic from '@anthropic-ai/sdk';
 
 // Initialize Anthropic client
-// Note: In production, use environment variable for API key
 const anthropic = new Anthropic({
   apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || '',
 });
 
-export interface BoneLossAnnotation {
-  tooth_number: number;
+export interface ChangeIndicator {
+  tooth_region: string; // Changed from tooth_number to avoid false precision
   region: {
     x: number; // Percentage position
     y: number;
     width: number;
     height: number;
   };
-  bone_loss_mm: number;
-  severity: 'mild' | 'moderate' | 'severe';
+  change_level: 'minimal' | 'moderate' | 'significant'; // Changed from severity
   description: string;
+  priority: 'review' | 'attention' | 'urgent';
 }
 
 export interface AnalysisResult {
   id: string;
   baseline_xray_id: string;
   current_xray_id: string;
-  overall_assessment: string;
-  average_bone_loss: number;
-  risk_level: 'low' | 'medium' | 'high';
-  annotations: BoneLossAnnotation[];
-  recommendations: string[];
+  overall_summary: string; // Changed from assessment
+  health_score: number; // 0-10 scale, replaces average_bone_loss
+  score_change: number; // -10 to +10, indicates improvement/decline
+  concern_level: 'low' | 'medium' | 'high'; // Changed from risk_level
+  indicators: ChangeIndicator[]; // Changed from annotations
+  discussion_points: string[]; // Changed from recommendations
   analysis_date: string;
+  confidence: 'low' | 'medium' | 'high';
+  is_demo_data: boolean; // Important flag!
 }
 
 /**
- * Analyze X-ray comparison using Claude Vision API
- * This is a mock implementation - in production, you would:
- * 1. Send both X-ray images to Claude Vision API
- * 2. Use a specialized prompt for periodontal analysis
- * 3. Parse the structured response
+ * DEMO MODE: Analyze X-ray comparison for demonstration purposes
+ *
+ * ⚠️ IMPORTANT: This generates sample data for UI demonstration only.
+ * This is NOT a medical diagnostic tool and should NOT be used for clinical decisions.
+ *
+ * For real medical analysis, integrate with FDA-approved diagnostic APIs
+ * such as Overjet or Denti.AI.
  */
 export async function analyzeXRayComparison(
   baselineImageUrl: string,
   currentImageUrl: string
 ): Promise<AnalysisResult> {
   try {
-    // For demo purposes, we'll use Claude API with a simulated analysis
-    // In production, you would fetch the images and send them to Claude Vision
+    // DEMO MODE: Generate sample insights for demonstration
+    // In production, this would call a professional diagnostic API
+    const demoAnalysis = generateDemoInsights();
 
-    // Simulated AI analysis (replace with actual Claude Vision API call)
-    const mockAnalysis = generateMockAnalysis();
-
-    // Store analysis in database
-    // await analysisService.create(mockAnalysis);
-
-    return mockAnalysis;
+    return demoAnalysis;
   } catch (error) {
-    console.error('Error analyzing X-rays:', error);
-    throw new Error('Failed to analyze X-rays');
+    console.error('Error generating demo insights:', error);
+    throw new Error('Failed to generate comparison insights');
   }
 }
 
 /**
- * Generate mock analysis data for demonstration
- * In production, this would be replaced with actual Claude Vision API response
+ * Generate demo insights for UI demonstration
+ * Uses relative indicators instead of precise measurements
  */
-function generateMockAnalysis(): AnalysisResult {
-  const annotations: BoneLossAnnotation[] = [
+function generateDemoInsights(): AnalysisResult {
+  const indicators: ChangeIndicator[] = [
     {
-      tooth_number: 18,
+      tooth_region: 'Upper Right Molar Area',
       region: { x: 15, y: 20, width: 8, height: 15 },
-      bone_loss_mm: 1.3,
-      severity: 'moderate',
-      description: 'Horizontal bone loss detected around molar #18',
+      change_level: 'moderate',
+      description: 'Observable changes detected in this region',
+      priority: 'attention',
     },
     {
-      tooth_number: 14,
+      tooth_region: 'Upper Right Premolar Area',
       region: { x: 35, y: 22, width: 7, height: 12 },
-      bone_loss_mm: 0.9,
-      severity: 'mild',
-      description: 'Minor bone resorption around premolar #14',
+      change_level: 'minimal',
+      description: 'Minor variations noted, monitor at next visit',
+      priority: 'review',
     },
     {
-      tooth_number: 31,
+      tooth_region: 'Lower Left Incisor Area',
       region: { x: 65, y: 75, width: 8, height: 14 },
-      bone_loss_mm: 1.1,
-      severity: 'moderate',
-      description: 'Progressive bone loss on mandibular incisor #31',
+      change_level: 'moderate',
+      description: 'Changes observed, professional measurement recommended',
+      priority: 'attention',
     },
   ];
 
-  const averageLoss = annotations.reduce((sum, a) => sum + a.bone_loss_mm, 0) / annotations.length;
-  const severeCases = annotations.filter(a => a.severity === 'severe').length;
-  const moderateCases = annotations.filter(a => a.severity === 'moderate').length;
+  // Calculate health score (0-10 scale)
+  const healthScore = 6.5; // Sample score
+  const scoreChange = -1.5; // Declining trend
+
+  // Determine concern level based on indicators
+  const urgentCount = indicators.filter(i => i.priority === 'urgent').length;
+  const attentionCount = indicators.filter(i => i.priority === 'attention').length;
+  const concernLevel = urgentCount > 0 ? 'high' : attentionCount > 1 ? 'medium' : 'low';
 
   return {
-    id: `analysis-${Date.now()}`,
+    id: `demo-analysis-${Date.now()}`,
     baseline_xray_id: 'baseline-id',
     current_xray_id: 'current-id',
-    overall_assessment: `Comparison analysis reveals progressive periodontal disease with ${moderateCases} areas of moderate concern and ${severeCases} severe cases. Average bone loss of ${averageLoss.toFixed(1)}mm detected across ${annotations.length} teeth.`,
-    average_bone_loss: averageLoss,
-    risk_level: averageLoss > 1.5 ? 'high' : averageLoss > 0.8 ? 'medium' : 'low',
-    annotations,
-    recommendations: [
-      'Deep cleaning (SRP) for teeth #18, #14, #31',
-      'Enhanced home care instructions with focus on interdental cleaning',
-      'Follow-up appointment in 3 months to monitor progression',
-      'Consider referral to periodontist if no improvement',
-      'Patient education on risk factors (smoking, diabetes)',
+    overall_summary: `Comparison analysis shows ${indicators.length} areas with observable changes. ` +
+      `Overall bone health score is ${healthScore}/10, showing a declining trend. ` +
+      `Professional measurement and examination recommended for precise assessment.`,
+    health_score: healthScore,
+    score_change: scoreChange,
+    concern_level: concernLevel,
+    indicators,
+    discussion_points: [
+      'Schedule detailed professional examination',
+      'Discuss observed changes with your dentist',
+      'Consider professional bone density measurement',
+      'Review oral hygiene routine and techniques',
+      'Ask about preventive care options',
     ],
     analysis_date: new Date().toISOString(),
+    confidence: 'medium',
+    is_demo_data: true, // CRITICAL: Always true for demo mode
   };
 }
 
 /**
- * Call Claude Vision API for actual X-ray analysis
- * This is the production implementation
+ * FUTURE: Integration with professional diagnostic API
+ * This would replace the demo function when connecting to real medical-grade analysis
+ *
+ * Requirements:
+ * - FDA/CE approval for diagnostic use
+ * - HIPAA compliance
+ * - Professional calibration
+ * - Licensed radiologist review
  */
-export async function analyzeWithClaudeVision(
+export async function analyzWithProfessionalAPI(
   baselineImageUrl: string,
   currentImageUrl: string
 ): Promise<AnalysisResult> {
-  try {
-    // Fetch images as base64
-    const baselineImage = await fetchImageAsBase64(baselineImageUrl);
-    const currentImage = await fetchImageAsBase64(currentImageUrl);
-
-    const message = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4096,
-      messages: [
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: baselineImage,
-              },
-            },
-            {
-              type: 'image',
-              source: {
-                type: 'base64',
-                media_type: 'image/jpeg',
-                data: currentImage,
-              },
-            },
-            {
-              type: 'text',
-              text: `You are an expert dental radiologist analyzing periodontal X-rays. Compare these two X-ray images (baseline and current) and provide a detailed analysis.
-
-Please identify:
-1. Areas of bone loss between the two images
-2. Tooth numbers affected (using FDI numbering system)
-3. Approximate bone loss measurements in millimeters
-4. Severity classification (mild <1mm, moderate 1-2mm, severe >2mm)
-5. Overall risk assessment
-6. Treatment recommendations
-
-Return your analysis in the following JSON format:
-{
-  "overall_assessment": "string",
-  "average_bone_loss": number,
-  "risk_level": "low|medium|high",
-  "annotations": [
-    {
-      "tooth_number": number,
-      "region": {"x": number, "y": number, "width": number, "height": number},
-      "bone_loss_mm": number,
-      "severity": "mild|moderate|severe",
-      "description": "string"
-    }
-  ],
-  "recommendations": ["string"]
-}`,
-            },
-          ],
-        },
-      ],
-    });
-
-    // Parse Claude's response
-    const content = message.content[0];
-    if (content.type === 'text') {
-      const jsonMatch = content.text.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        const analysisData = JSON.parse(jsonMatch[0]);
-        return {
-          id: `analysis-${Date.now()}`,
-          baseline_xray_id: 'baseline-id',
-          current_xray_id: 'current-id',
-          ...analysisData,
-          analysis_date: new Date().toISOString(),
-        };
-      }
-    }
-
-    throw new Error('Failed to parse Claude Vision response');
-  } catch (error) {
-    console.error('Claude Vision API error:', error);
-    // Fallback to mock analysis
-    return generateMockAnalysis();
-  }
+  // Placeholder for future professional API integration
+  // Examples: Overjet API, Denti.AI, Pearl AI
+  throw new Error('Professional API integration not yet implemented. This requires medical-grade diagnostic tools.');
 }
 
 /**
- * Fetch image from URL and convert to base64
+ * Educational helper: Explain what the system can and cannot do
  */
-async function fetchImageAsBase64(url: string): Promise<string> {
-  try {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        // Remove data URL prefix
-        const base64Data = base64String.split(',')[1];
-        resolve(base64Data);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error('Error fetching image:', error);
-    throw error;
-  }
-}
+export const SYSTEM_CAPABILITIES = {
+  canDo: [
+    'Display X-ray images side-by-side',
+    'Help track dental visits over time',
+    'Provide visual comparison tools',
+    'Generate discussion points for dentist visits',
+    'Demonstrate UI/UX concepts',
+  ],
+  cannotDo: [
+    'Provide medical diagnoses',
+    'Measure bone loss with millimeter precision',
+    'Replace professional dental examination',
+    'Detect diseases or conditions',
+    'Prescribe treatments',
+  ],
+  disclaimer: 'This is a demonstration application for UI/UX purposes. ' +
+    'All analysis features use sample data and should NOT be used for medical decisions. ' +
+    'Always consult a licensed dental professional for diagnosis and treatment.',
+};
