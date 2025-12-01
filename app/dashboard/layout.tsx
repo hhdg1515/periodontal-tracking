@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Activity, Users, FolderOpen, BarChart3, Settings } from "lucide-react";
 
 export default function DashboardLayout({
@@ -6,6 +9,21 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const pathname = usePathname();
+
+  const isActive = (href: string) => {
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
+    }
+    return pathname.startsWith(href);
+  };
+
+  const getNavLinkClass = (href: string) => {
+    const baseClass = "flex items-center space-x-3 px-3 py-2 rounded-lg";
+    const activeClass = "bg-blue-50 text-blue-600";
+    const inactiveClass = "hover:bg-gray-100 text-gray-700";
+    return `${baseClass} ${isActive(href) ? activeClass : inactiveClass}`;
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
@@ -30,28 +48,28 @@ export default function DashboardLayout({
           <nav className="p-4 space-y-1">
             <Link
               href="/dashboard"
-              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              className={getNavLinkClass("/dashboard")}
             >
               <BarChart3 className="h-5 w-5" />
               <span>Dashboard</span>
             </Link>
             <Link
               href="/dashboard/patients"
-              className="flex items-center space-x-3 px-3 py-2 rounded-lg bg-blue-50 text-blue-600"
+              className={getNavLinkClass("/dashboard/patients")}
             >
               <Users className="h-5 w-5" />
               <span>Patients</span>
             </Link>
             <Link
               href="/dashboard/analyses"
-              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              className={getNavLinkClass("/dashboard/analyses")}
             >
               <FolderOpen className="h-5 w-5" />
               <span>Analyses</span>
             </Link>
             <Link
               href="/dashboard/settings"
-              className="flex items-center space-x-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700"
+              className={getNavLinkClass("/dashboard/settings")}
             >
               <Settings className="h-5 w-5" />
               <span>Settings</span>
