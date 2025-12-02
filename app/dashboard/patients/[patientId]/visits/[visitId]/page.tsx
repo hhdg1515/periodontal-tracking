@@ -143,7 +143,7 @@ export default function VisitDetailPage() {
               <CardTitle>Uploaded X-Rays</CardTitle>
             </CardHeader>
             <CardContent>
-              <XRayGallery visitId={visitId} />
+              <XRayGallery visitId={visitId} patientId={patientId} />
             </CardContent>
           </Card>
         </TabsContent>

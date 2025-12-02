@@ -118,7 +118,7 @@ export function XRayComparisonViewer({
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {xrays.map((xray) => {
                   // @ts-ignore - visit is included in the query
-                  const visitDate = xray.visit?.visit_date || xray.upload_date;
+                  const visitDate = xray.visit?.visit_date || xray.uploaded_at;
                   return (
                     <button
                       key={xray.id}
@@ -155,7 +155,7 @@ export function XRayComparisonViewer({
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {xrays.map((xray) => {
                   // @ts-ignore - visit is included in the query
-                  const visitDate = xray.visit?.visit_date || xray.upload_date;
+                  const visitDate = xray.visit?.visit_date || xray.uploaded_at;
                   return (
                     <button
                       key={xray.id}
@@ -204,14 +204,14 @@ export function XRayComparisonViewer({
                   <>
                     {' - '}
                     {/* @ts-ignore */}
-                    {format(new Date(baselineXRay.visit?.visit_date || baselineXRay.upload_date), 'MMM dd, yyyy')}
+                    {format(new Date(baselineXRay.visit?.visit_date || baselineXRay.uploaded_at), 'MMM dd, yyyy')}
                   </>
                 )}
               </div>
               <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed">
                 {baselineXRay ? (
                   <img
-                    src={baselineXRay.file_url}
+                    src={baselineXRay.image_url}
                     alt="Baseline X-ray"
                     className="w-full h-full object-contain rounded-lg"
                   />
@@ -229,14 +229,14 @@ export function XRayComparisonViewer({
                   <>
                     {' - '}
                     {/* @ts-ignore */}
-                    {format(new Date(currentXRay.visit?.visit_date || currentXRay.upload_date), 'MMM dd, yyyy')}
+                    {format(new Date(currentXRay.visit?.visit_date || currentXRay.uploaded_at), 'MMM dd, yyyy')}
                   </>
                 )}
               </div>
               <div className="aspect-square bg-gray-100 rounded-lg flex items-center justify-center border-2 border-dashed">
                 {currentXRay ? (
                   <img
-                    src={currentXRay.file_url}
+                    src={currentXRay.image_url}
                     alt="Current X-ray"
                     className="w-full h-full object-contain rounded-lg"
                   />

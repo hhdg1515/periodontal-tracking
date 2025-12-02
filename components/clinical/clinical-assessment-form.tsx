@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { ClinicalAssessment, ClinicalAssessmentInsert } from "@/lib/types/clinical";
-import { clinicalAssessmentService } from "@/lib/supabase/clinical-service";
 
 interface ClinicalAssessmentFormProps {
   visitId: string;
@@ -62,11 +61,12 @@ export function ClinicalAssessmentForm({
     setSuccessMessage(null);
 
     try {
+      // Mock: Simulate saving clinical assessment
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       if (existingAssessment?.id) {
-        await clinicalAssessmentService.update(existingAssessment.id, formData);
         setSuccessMessage('Clinical assessment updated successfully');
       } else {
-        await clinicalAssessmentService.create(formData as ClinicalAssessmentInsert);
         setSuccessMessage('Clinical assessment saved successfully');
       }
       onSaveSuccess?.();

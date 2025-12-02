@@ -1,25 +1,24 @@
 "use client";
 
-import useSWR from 'swr';
-import { clinicalAssessmentService } from '@/lib/supabase/clinical-service';
+import { useState } from 'react';
 import { ClinicalAssessment } from '@/lib/types/clinical';
 
 /**
  * Hook to fetch clinical assessment for a specific visit
  */
 export function useClinicalAssessment(visitId: string | null) {
-  const { data, error, isLoading, mutate } = useSWR<ClinicalAssessment | null>(
-    visitId ? [`/clinical-assessment`, visitId] : null,
-    async () => {
-      if (!visitId) return null;
-      return await clinicalAssessmentService.getByVisitId(visitId);
-    }
-  );
+  const [assessment] = useState<ClinicalAssessment | null>(null);
+  const [isLoading] = useState(false);
+  const [isError] = useState(false);
+
+  const mutate = () => {
+    // No-op for mock data
+  };
 
   return {
-    assessment: data || null,
+    assessment,
     isLoading,
-    isError: error,
+    isError,
     mutate,
   };
 }
@@ -29,11 +28,13 @@ export function useClinicalAssessment(visitId: string | null) {
  */
 export function useClinicalAssessmentMutations() {
   const createAssessment = async (assessmentData: any) => {
-    return await clinicalAssessmentService.create(assessmentData);
+    // Mock: Store in memory or localStorage
+    return { id: `assess-${Date.now()}`, ...assessmentData };
   };
 
   const updateAssessment = async (id: string, updates: any) => {
-    return await clinicalAssessmentService.update(id, updates);
+    // Mock: Return updated data
+    return { id, ...updates };
   };
 
   return {

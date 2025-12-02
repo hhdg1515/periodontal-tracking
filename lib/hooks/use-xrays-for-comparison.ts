@@ -1,29 +1,53 @@
-import useSWR from 'swr';
-import { xraysService } from '@/lib/supabase/xrays-service';
-import { XRay } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import { DEMO_XRAYS } from '../demo/mock-data';
+
+// Convert demo X-rays to expected format
+const convertDemoXRay = (xray: any) => ({
+  id: xray.id,
+  visit_id: xray.visitId,
+  image_url: xray.imageUrl,
+  file_url: xray.imageUrl, // Keep for backwards compatibility
+  xray_type: xray.type === 'baseline' ? 'periapical' : 'bitewing_right',
+  analysis_status: 'analyzed',
+  uploaded_at: xray.uploadedAt.toISOString(),
+  upload_date: xray.uploadedAt.toISOString(), // Keep for backwards compatibility
+  created_at: xray.uploadedAt.toISOString(),
+});
 
 /**
  * Hook to fetch all X-rays for a patient, grouped by visit
  * Used for the comparison page
  */
 export function useXRaysForComparison(patientId: string | null) {
-  const {
-    data: xrays,
-    error,
-    isLoading,
-    mutate,
-  } = useSWR<XRay[]>(
-    patientId ? [`/api/xrays/patient`, patientId] : null,
-    async () => {
-      if (!patientId) return [];
-      return await xraysService.getByPatientId(patientId);
+  const [xrays, setXRays] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    if (!patientId) {
+      setXRays([]);
+      return;
     }
-  );
+
+    setIsLoading(true);
+    // For now, return all demo X-rays
+    // In production, filter by patientId
+    const allXRays = DEMO_XRAYS.map(convertDemoXRay);
+    setXRays(allXRays);
+    setIsLoading(false);
+  }, [patientId]);
+
+  const mutate = () => {
+    if (patientId) {
+      const allXRays = DEMO_XRAYS.map(convertDemoXRay);
+      setXRays(allXRays);
+    }
+  };
 
   return {
-    xrays: xrays || [],
+    xrays,
     isLoading,
-    isError: error,
+    isError,
     mutate,
   };
 }
@@ -32,21 +56,27 @@ export function useXRaysForComparison(patientId: string | null) {
  * Hook to fetch a specific X-ray by ID
  */
 export function useXRay(xrayId: string | null) {
-  const {
-    data: xray,
-    error,
-    isLoading,
-  } = useSWR<XRay>(
-    xrayId ? [`/api/xray`, xrayId] : null,
-    async () => {
-      if (!xrayId) return null;
-      return await xraysService.getById(xrayId);
+  const [xray, setXRay] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    if (!xrayId) {
+      setXRay(null);
+      return;
     }
-  );
+
+    setIsLoading(true);
+    const demoXRay = DEMO_XRAYS.find(x => x.id === xrayId);
+    if (demoXRay) {
+      setXRay(convertDemoXRay(demoXRay));
+    }
+    setIsLoading(false);
+  }, [xrayId]);
 
   return {
-    xray: xray || null,
+    xray,
     isLoading,
-    isError: error,
+    isError,
   };
 }

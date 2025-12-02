@@ -5,14 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Eye, Download, Trash2, Loader2, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { useXRays } from "@/lib/hooks/use-xrays";
-import { xraysService } from "@/lib/supabase/xrays-service";
 import { format } from "date-fns";
 
 interface XRayGalleryProps {
   visitId: string;
+  patientId: string;
 }
 
-export function XRayGallery({ visitId }: XRayGalleryProps) {
+export function XRayGallery({ visitId, patientId }: XRayGalleryProps) {
   const { xrays, isLoading, isError, mutate } = useXRays(visitId);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -23,7 +23,8 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
 
     setDeletingId(xrayId);
     try {
-      await xraysService.delete(xrayId);
+      // Mock: Simulate delete with delay
+      await new Promise(resolve => setTimeout(resolve, 300));
       mutate(); // Refresh the list
     } catch (error) {
       console.error("Error deleting X-ray:", error);
@@ -33,13 +34,31 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
     }
   };
 
-  const handleDownload = (url: string, filename: string) => {
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = filename;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+  const handleDownload = async (url: string, filename: string) => {
+    try {
+      // Fetch the image as a blob
+      const response = await fetch(url);
+      const blob = await response.blob();
+
+      // Create a blob URL
+      const blobUrl = window.URL.createObjectURL(blob);
+
+      // Create a temporary link element
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+
+      // Trigger the download
+      link.click();
+
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Error downloading X-ray:", error);
+      alert("Failed to download X-ray. Please try again.");
+    }
   };
 
   if (isLoading) {
@@ -79,7 +98,7 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
           {/* Image */}
           <div className="aspect-square bg-gray-100 relative">
             <img
-              src={xray.file_url}
+              src={xray.image_url}
               alt={xray.xray_type}
               className="w-full h-full object-cover"
             />
@@ -89,7 +108,7 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
                 Pending Analysis
               </span>
             )}
-            {xray.analysis_status === "completed" && (
+            {xray.analysis_status === "analyzed" && (
               <span className="absolute top-2 right-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">
                 Analyzed
               </span>
@@ -104,14 +123,14 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
                   {xray.xray_type.replace(/_/g, " ")}
                 </h4>
                 <p className="text-xs text-gray-500">
-                  {format(new Date(xray.upload_date), 'MMM dd, yyyy HH:mm')}
+                  {format(new Date(xray.uploaded_at), 'MMM dd, yyyy HH:mm')}
                 </p>
               </div>
             </div>
 
             {/* Actions */}
             <div className="flex gap-2">
-              <Link href={`/dashboard/compare?xray=${xray.id}`} className="flex-1">
+              <Link href={`/dashboard/compare?xray=${xray.id}&patient=${patientId}`} className="flex-1">
                 <Button variant="outline" size="sm" className="w-full">
                   <Eye className="h-3 w-3 mr-1" />
                   Compare
@@ -120,7 +139,7 @@ export function XRayGallery({ visitId }: XRayGalleryProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => handleDownload(xray.file_url, `xray-${xray.id}.jpg`)}
+                onClick={() => handleDownload(xray.image_url, `xray-${xray.id}.jpg`)}
                 title="Download X-ray"
               >
                 <Download className="h-4 w-4" />

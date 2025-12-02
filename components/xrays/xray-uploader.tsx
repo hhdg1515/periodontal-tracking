@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { xraysService } from "@/lib/supabase/xrays-service";
 
 interface XRayUploaderProps {
   visitId: string;
@@ -58,8 +57,8 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
     setIsSaving(true);
 
     try {
-      // Upload all files in parallel
-      const uploadPromises = files.map(async (uploadedFile, index) => {
+      // Mock: Simulate upload for all files
+      const uploadPromises = files.map(async (uploadedFile) => {
         try {
           // Update status to uploading
           setFiles((prev) =>
@@ -68,11 +67,8 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
             )
           );
 
-          await xraysService.uploadAndCreate(
-            uploadedFile.file,
-            visitId,
-            uploadedFile.type
-          );
+          // Simulate upload delay
+          await new Promise(resolve => setTimeout(resolve, 500));
 
           // Update status to success
           setFiles((prev) =>
@@ -228,7 +224,7 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
                   Uploading...
                 </>
               ) : (
-                "Upload X-Rays to Supabase"
+                "Upload X-Rays"
               )}
             </Button>
             {hasErrors && (

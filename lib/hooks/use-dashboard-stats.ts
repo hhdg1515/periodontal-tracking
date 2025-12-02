@@ -1,33 +1,46 @@
 "use client";
 
-import useSWR from 'swr';
-import { statsService, DashboardStats } from '@/lib/supabase/stats-service';
+import { useState, useEffect } from 'react';
 
-// For now, using a hardcoded clinic ID for MVP
-// In production, this would come from authentication context
-const DEMO_CLINIC_ID = 'demo-clinic-id';
+export interface DashboardStats {
+  totalPatients: number;
+  analysesThisMonth: number;
+  treatmentAcceptanceRate: number | null;
+  pendingReviews: number;
+}
 
 /**
  * Hook to fetch dashboard statistics
  */
 export function useDashboardStats() {
-  const { data, error, isLoading, mutate } = useSWR<DashboardStats>(
-    ['dashboard-stats', DEMO_CLINIC_ID],
-    async () => {
-      return await statsService.getDashboardStats(DEMO_CLINIC_ID);
-    },
-    {
-      // Refresh every 30 seconds
-      refreshInterval: 30000,
-      // Revalidate on focus
-      revalidateOnFocus: true,
-    }
-  );
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isError, setIsError] = useState(false);
+
+  useEffect(() => {
+    // Simulate loading delay
+    const timer = setTimeout(() => {
+      // Return mock statistics
+      setStats({
+        totalPatients: 3,
+        analysesThisMonth: 0,
+        treatmentAcceptanceRate: null,
+        pendingReviews: 0,
+      });
+      setIsLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  const mutate = () => {
+    // No-op for mock data
+  };
 
   return {
-    stats: data,
+    stats,
     isLoading,
-    isError: error,
+    isError,
     mutate,
   };
 }

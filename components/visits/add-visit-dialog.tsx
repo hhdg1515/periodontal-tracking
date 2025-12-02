@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { visitsService } from "@/lib/supabase/visits-service";
 
 interface AddVisitDialogProps {
   patientId: string;
@@ -42,12 +41,18 @@ export function AddVisitDialog({
     setError(null);
 
     try {
-      await visitsService.create({
+      // Mock: Store visit in memory/localStorage
+      const newVisit = {
+        id: `visit-${Date.now()}`,
         patient_id: patientId,
         visit_date: formData.visitDate,
         visit_type: formData.visitType,
         notes: formData.notes || null,
-      });
+        created_at: new Date().toISOString(),
+      };
+
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       // Reset form and close dialog
       setFormData({
