@@ -1,3 +1,5 @@
+import { PeriodontalMeasurementEntry } from "@/lib/types/clinical";
+
 /**
  * Demo Mock Data
  * Sample patients, visits, and X-rays for demonstration purposes
@@ -153,6 +155,63 @@ export const DEMO_XRAYS: DemoXRay[] = [
   },
 ];
 
+const createChart = (
+  entries: Array<[
+    string,
+    string,
+    number,
+    number,
+    boolean,
+    PeriodontalMeasurementEntry['priority']
+  ]>
+): PeriodontalMeasurementEntry[] =>
+  entries.map(([tooth, surface, pocketDepth, attachmentLoss, bleeding, priority]) => ({
+    tooth,
+    surface,
+    pocket_depth: pocketDepth,
+    attachment_loss: attachmentLoss,
+    bleeding,
+    priority,
+  }));
+
+export const DEMO_PERIODONTAL_CHARTS: Record<string, PeriodontalMeasurementEntry[]> = {
+  default: createChart([
+    ['14', 'MB', 6, 4, true, 'attention'],
+    ['24', 'DB', 5, 3, false, 'routine'],
+    ['36', 'Buccal', 4, 2, false, 'routine'],
+  ]),
+  'visit-001': createChart([
+    ['14', 'MB', 8, 6, true, 'urgent'],
+    ['14', 'DL', 6, 4, true, 'attention'],
+    ['15', 'MB', 5, 3, false, 'routine'],
+  ]),
+  'visit-002': createChart([
+    ['14', 'MB', 6, 4, true, 'attention'],
+    ['14', 'DL', 5, 3, false, 'routine'],
+    ['16', 'ML', 4, 2, false, 'routine'],
+  ]),
+  'visit-003': createChart([
+    ['26', 'MB', 7, 5, true, 'urgent'],
+    ['25', 'DB', 6, 4, true, 'attention'],
+    ['24', 'MB', 5, 3, false, 'routine'],
+  ]),
+  'visit-004': createChart([
+    ['26', 'MB', 5, 3, false, 'routine'],
+    ['25', 'DB', 5, 3, false, 'routine'],
+    ['24', 'MB', 4, 2, false, 'routine'],
+  ]),
+  'visit-005': createChart([
+    ['32', 'Lingual', 6, 4, true, 'attention'],
+    ['31', 'Buccal', 5, 3, false, 'routine'],
+    ['33', 'Lingual', 4, 2, false, 'routine'],
+  ]),
+  'visit-006': createChart([
+    ['32', 'Lingual', 4, 2, false, 'routine'],
+    ['31', 'Buccal', 4, 2, false, 'routine'],
+    ['33', 'Lingual', 3, 1, false, 'routine'],
+  ]),
+};
+
 /**
  * Helper function to get patient by ID
  */
@@ -195,4 +254,8 @@ export function getDemoPatientWithXRays(patientId: string) {
     baselineXRay: xrays.find((x) => x.type === 'baseline'),
     currentXRay: xrays.find((x) => x.type === 'current'),
   };
+}
+
+export function getDemoPeriodontalChartByVisitId(visitId: string) {
+  return DEMO_PERIODONTAL_CHARTS[visitId] || DEMO_PERIODONTAL_CHARTS.default;
 }

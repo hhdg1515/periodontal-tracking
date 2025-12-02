@@ -24,18 +24,13 @@ export function AnalysisPanel({ baselineId, currentId }: AnalysisPanelProps) {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
+  const [analysisTimestamp, setAnalysisTimestamp] = useState<string | null>(null);
   const { t, language } = useLanguage();
-
-  // Automatically analyze when both X-rays are selected
-  useEffect(() => {
-    if (baselineXRay && currentXRay && !analysis) {
-      handleAnalyze();
-    }
-  }, [baselineXRay, currentXRay, analysis, language]);
 
   useEffect(() => {
     if (analysis?.is_demo_data) {
       setAnalysis(null);
+      setAnalysisTimestamp(null);
     }
   }, [language]);
 
@@ -50,6 +45,7 @@ export function AnalysisPanel({ baselineId, currentId }: AnalysisPanelProps) {
         language
       );
       setAnalysis(result);
+      setAnalysisTimestamp(new Date().toISOString());
     } catch (error) {
       console.error('Analysis error:', error);
       alert(t("comparison.analysis.errors.insightsFailed"));
@@ -120,7 +116,19 @@ export function AnalysisPanel({ baselineId, currentId }: AnalysisPanelProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t("comparison.analysis.title")}</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg">{t("comparison.analysis.title")}</CardTitle>
+            {hasComparison && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleAnalyze}
+                disabled={isAnalyzing}
+              >
+                {t("comparison.analysis.generateButton")}
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-gray-500">
@@ -206,9 +214,16 @@ export function AnalysisPanel({ baselineId, currentId }: AnalysisPanelProps) {
                 </span>
               )}
             </CardTitle>
-            <span className="text-xs text-gray-500">
-              {t("comparison.analysis.confidenceLabel")}: {analysis.confidence}
-            </span>
+            <div className="flex flex-col items-end gap-1 text-right">
+              {analysisTimestamp && (
+                <span className="text-xs text-gray-500">
+                  {new Date(analysisTimestamp).toLocaleString()}
+                </span>
+              )}
+              <span className="text-xs text-gray-500">
+                {t("comparison.analysis.confidenceLabel")}: {analysis.confidence}
+              </span>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

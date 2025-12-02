@@ -13,6 +13,19 @@ export type EndoConcern = 'none' | 'suspected' | 'confirmed';
 export type ReferralSpecialty = 'endodontist' | 'periodontist' | 'oral_surgeon';
 export type TreatmentStatus = 'proposed' | 'accepted' | 'in_progress' | 'completed' | 'cancelled';
 export type FindingSeverity = 'mild' | 'moderate' | 'severe';
+export type PeriodontalPriority = 'routine' | 'attention' | 'urgent';
+export type PeriodontalAction = 'monitor' | 'srp' | 'surgery' | 'refer';
+
+export interface PeriodontalMeasurementEntry {
+  tooth: string; // FDI or universal notation
+  surface: string; // e.g., MB, DB, etc.
+  pocket_depth: number;
+  attachment_loss: number;
+  bleeding: boolean;
+  priority: PeriodontalPriority;
+  recommended_action?: PeriodontalAction;
+  notes?: string | null;
+}
 
 // Clinical Assessment Record
 export interface ClinicalAssessment {
@@ -39,6 +52,7 @@ export interface ClinicalAssessment {
   attachment_loss_max: number | null;
   bleeding_on_probing: boolean;
   furcation_involvement: FurcationInvolvement;
+  periodontal_chart?: PeriodontalMeasurementEntry[];
 
   // Clinical impression
   perio_status: PerioStatus | null;

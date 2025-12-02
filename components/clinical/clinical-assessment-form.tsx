@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, AlertCircle, CheckCircle2, Info } from "lucide-react";
-import { ClinicalAssessment, ClinicalAssessmentInsert } from "@/lib/types/clinical";
+import { ClinicalAssessment, ClinicalAssessmentInsert, PeriodontalMeasurementEntry } from "@/lib/types/clinical";
 import { useLanguage } from "@/lib/i18n/language-context";
+import { getDemoPeriodontalChartByVisitId } from "@/lib/demo/mock-data";
 
 interface ClinicalAssessmentFormProps {
   visitId: string;
@@ -20,6 +21,13 @@ export function ClinicalAssessmentForm({
   existingAssessment,
   onSaveSuccess,
 }: ClinicalAssessmentFormProps) {
+  const toothOptions = [
+    '11','12','13','14','15','16','17','18',
+    '21','22','23','24','25','26','27','28',
+    '31','32','33','34','35','36','37','38',
+    '41','42','43','44','45','46','47','48'
+  ];
+  const surfaceOptions = ['MB', 'B', 'DB', 'ML', 'L', 'DL'];
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -42,6 +50,7 @@ export function ClinicalAssessmentForm({
     // Periodontal
     bleeding_on_probing: false,
     furcation_involvement: 'not_assessed',
+    periodontal_chart: getDemoPeriodontalChartByVisitId(visitId),
     // Impressions
     combined_lesion: false,
     requires_endo_evaluation: false,
@@ -49,12 +58,68 @@ export function ClinicalAssessmentForm({
     requires_specialist_referral: false,
   });
 
+  const [newMeasurement, setNewMeasurement] = useState<PeriodontalMeasurementEntry>({
+    tooth: '',
+    surface: '',
+    pocket_depth: 4,
+    attachment_loss: 2,
+    bleeding: false,
+    priority: 'routine',
+    recommended_action: 'monitor',
+  });
+  const periodontalChart = ((formData.periodontal_chart || []) as PeriodontalMeasurementEntry[]).sort(
+    (a, b) => b.pocket_depth - a.pocket_depth || b.attachment_loss - a.attachment_loss
+  );
+  const highRiskSites = periodontalChart.filter((entry) => entry.pocket_depth >= 6);
+  const watchSites = periodontalChart.filter((entry) => entry.pocket_depth >= 4 && entry.pocket_depth < 6);
+  const bleedingSites = periodontalChart.filter((entry) => entry.bleeding);
+  const getPriorityLabel = (priority: PeriodontalMeasurementEntry['priority']) =>
+    t(`clinical.sections.periodontal.priority.${priority}` as const);
+
+  const priorityBadgeStyles: Record<PeriodontalMeasurementEntry['priority'], string> = {
+    urgent: 'bg-red-100 text-red-700',
+    attention: 'bg-orange-100 text-orange-700',
+    routine: 'bg-green-100 text-green-700',
+  };
+
+  const handleAddMeasurement = () => {
+    if (!newMeasurement.tooth.trim() || !newMeasurement.surface.trim()) {
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      periodontal_chart: [...((prev?.periodontal_chart as PeriodontalMeasurementEntry[]) || []), newMeasurement],
+    }));
+    setNewMeasurement({
+      tooth: '',
+      surface: '',
+      pocket_depth: 4,
+      attachment_loss: 2,
+      bleeding: false,
+      priority: 'routine',
+      recommended_action: 'monitor',
+    });
+  };
+
+  const handleRemoveMeasurement = (index: number) => {
+    setFormData((prev) => ({
+      ...prev,
+      periodontal_chart: ((prev?.periodontal_chart as PeriodontalMeasurementEntry[]) || []).filter((_, idx) => idx !== index),
+    }));
+  };
+
   // Load existing assessment
   useEffect(() => {
     if (existingAssessment) {
       setFormData(existingAssessment);
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        visit_id: visitId,
+        periodontal_chart: getDemoPeriodontalChartByVisitId(visitId),
+      }));
     }
-  }, [existingAssessment]);
+  }, [existingAssessment, visitId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -387,6 +452,197 @@ export function ClinicalAssessmentForm({
                 </label>
               ))}
             </div>
+          </div>
+
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-3">
+              <div>
+                <h4 className="text-sm font-semibold">{t("clinical.sections.periodontal.chartTitle")}</h4>
+                <p className="text-xs text-gray-500">{t("clinical.sections.periodontal.chartSubtitle")}</p>
+              </div>
+            </div>
+            <div className="space-y-3 mb-4">
+              <div className="grid md:grid-cols-4 gap-3">
+                <select
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  value={newMeasurement.tooth}
+                  onChange={(e) => setNewMeasurement({ ...newMeasurement, tooth: e.target.value })}
+                >
+                  <option value="">{t("clinical.sections.periodontal.table.toothPlaceholder")}</option>
+                  {toothOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  value={newMeasurement.surface}
+                  onChange={(e) => setNewMeasurement({ ...newMeasurement, surface: e.target.value })}
+                >
+                  <option value="">{t("clinical.sections.periodontal.table.surfacePlaceholder")}</option>
+                  {surfaceOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={newMeasurement.pocket_depth}
+                  onChange={(e) => setNewMeasurement({ ...newMeasurement, pocket_depth: Number(e.target.value) })}
+                  placeholder={t("clinical.sections.periodontal.table.depth") as string}
+                />
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.5}
+                  value={newMeasurement.attachment_loss}
+                  onChange={(e) => setNewMeasurement({ ...newMeasurement, attachment_loss: Number(e.target.value) })}
+                  placeholder={t("clinical.sections.periodontal.table.attachment") as string}
+                />
+              </div>
+              <div className="grid md:grid-cols-4 gap-3">
+                <div className="flex items-center justify-between border rounded-lg px-3 py-2 text-sm">
+                  <span>{t("clinical.sections.periodontal.table.bleedLabel")}</span>
+                  <input
+                    type="checkbox"
+                    className="rounded"
+                    checked={newMeasurement.bleeding}
+                    onChange={(e) => setNewMeasurement({ ...newMeasurement, bleeding: e.target.checked })}
+                  />
+                </div>
+                <select
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  value={newMeasurement.priority}
+                  onChange={(e) =>
+                    setNewMeasurement({ ...newMeasurement, priority: e.target.value as PeriodontalMeasurementEntry['priority'] })
+                  }
+                >
+                  <option value="routine">{t("clinical.sections.periodontal.priority.routine")}</option>
+                  <option value="attention">{t("clinical.sections.periodontal.priority.attention")}</option>
+                  <option value="urgent">{t("clinical.sections.periodontal.priority.urgent")}</option>
+                </select>
+                <select
+                  className="w-full border rounded-lg px-3 py-2 text-sm"
+                  value={newMeasurement.recommended_action}
+                  onChange={(e) =>
+                    setNewMeasurement({ ...newMeasurement, recommended_action: e.target.value as PeriodontalMeasurementEntry['recommended_action'] })
+                  }
+                >
+                  <option value="monitor">{t("clinical.sections.periodontal.actions.monitor")}</option>
+                  <option value="srp">{t("clinical.sections.periodontal.actions.srp")}</option>
+                  <option value="surgery">{t("clinical.sections.periodontal.actions.surgery")}</option>
+                  <option value="refer">{t("clinical.sections.periodontal.actions.refer")}</option>
+                </select>
+                <Button type="button" onClick={handleAddMeasurement}>
+                  {t("clinical.sections.periodontal.table.addSiteButton")}
+                </Button>
+              </div>
+            </div>
+            {periodontalChart.length > 0 ? (
+              <>
+                <div className="grid md:grid-cols-3 gap-4 mb-4">
+                  <Card>
+                    <CardContent className="py-3">
+                      <p className="text-xs text-gray-500">{t("clinical.sections.periodontal.stats.critical")}</p>
+                      <p className="text-2xl font-bold text-red-600">{highRiskSites.length}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="py-3">
+                      <p className="text-xs text-gray-500">{t("clinical.sections.periodontal.stats.warning")}</p>
+                      <p className="text-2xl font-bold text-orange-500">{watchSites.length}</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="py-3">
+                      <p className="text-xs text-gray-500">{t("clinical.sections.periodontal.stats.bleeding")}</p>
+                      <p className="text-2xl font-bold text-blue-600">{bleedingSites.length}</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="overflow-x-auto rounded-lg border">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-gray-50 text-gray-600 uppercase text-xs tracking-wide">
+                      <tr>
+                        <th className="px-4 py-3 text-left">{t("clinical.sections.periodontal.table.site")}</th>
+                        <th className="px-4 py-3 text-left">{t("clinical.sections.periodontal.table.depth")}</th>
+                        <th className="px-4 py-3 text-left">{t("clinical.sections.periodontal.table.attachment")}</th>
+                        <th className="px-4 py-3 text-left">{t("clinical.sections.periodontal.table.bleeding")}</th>
+                        <th className="px-4 py-3 text-left">{t("clinical.sections.periodontal.table.priority")}</th>
+                        <th className="px-4 py-3 text-left">{t("clinical.sections.periodontal.table.actionLabel")}</th>
+                        <th className="px-4 py-3 text-left"></th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {periodontalChart.map((entry, index) => (
+                        <tr key={`${entry.tooth}-${entry.surface}-${index}`} className="border-t">
+                          <td className="px-4 py-2 font-medium text-gray-900">
+                            #{entry.tooth} <span className="text-gray-500">{entry.surface}</span>
+                          </td>
+                          <td className="px-4 py-2">
+                            <span className={`font-semibold ${entry.pocket_depth >= 6 ? 'text-red-600' : entry.pocket_depth >= 4 ? 'text-orange-600' : 'text-gray-800'}`}>
+                              {entry.pocket_depth} mm
+                            </span>
+                          </td>
+                          <td className="px-4 py-2">{entry.attachment_loss} mm</td>
+                          <td className="px-4 py-2">
+                            {entry.bleeding ? (
+                              <span className="text-red-600 text-xs font-medium">{t("clinical.sections.periodontal.table.bleedingYes")}</span>
+                            ) : (
+                              <span className="text-gray-500 text-xs">{t("clinical.sections.periodontal.table.bleedingNo")}</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2">
+                            <span className={`text-xs px-2 py-1 rounded-full font-semibold ${priorityBadgeStyles[entry.priority]}`}>
+                              {getPriorityLabel(entry.priority)}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-sm text-gray-700">
+                            {entry.recommended_action
+                              ? t(`clinical.sections.periodontal.actions.${entry.recommended_action}` as const)
+                              : '-'}
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <Button type="button" variant="ghost" size="sm" onClick={() => handleRemoveMeasurement(index)}>
+                              {t("clinical.sections.periodontal.table.remove")}
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                {highRiskSites.length > 0 && (
+                  <div className="mt-4">
+                    <h5 className="text-sm font-semibold mb-2">{t("clinical.sections.periodontal.riskList.title")}</h5>
+                    <ul className="space-y-2">
+                      {highRiskSites.map((entry, index) => (
+                        <li key={`${entry.tooth}-${entry.surface}-risk-${index}`} className="flex items-start gap-3">
+                          <span className="text-red-600 font-bold">{index + 1}.</span>
+                          <div>
+                            <p className="text-sm font-semibold">
+                              #{entry.tooth} {entry.surface} — {entry.pocket_depth}mm
+                            </p>
+                            <p className="text-xs text-gray-600">
+                              {t("clinical.sections.periodontal.riskList.recommendation")}
+                            </p>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-sm text-gray-500 border rounded-lg px-4 py-6 text-center">
+                {t("clinical.sections.periodontal.table.empty")}
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

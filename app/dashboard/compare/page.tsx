@@ -22,6 +22,8 @@ export default function ComparePage() {
 
   // If xray ID is provided in URL, fetch it and set as current
   const { xray } = useXRay(xrayId);
+  const { xray: baselineXRay } = useXRay(selectedBaseline);
+  const { xray: currentXRay } = useXRay(selectedCurrent);
 
   useEffect(() => {
     if (xray) {
@@ -34,12 +36,26 @@ export default function ComparePage() {
     }
   }, [xray]);
 
+  const resolvedPatientId =
+    baselineXRay?.visit?.patient_id ||
+    currentXRay?.visit?.patient_id ||
+    selectedPatientId;
+
+  const resolvedVisitId =
+    currentXRay?.visit?.id || baselineXRay?.visit?.id || null;
+
+  const backHref = resolvedVisitId && resolvedPatientId
+    ? `/dashboard/patients/${resolvedPatientId}/visits/${resolvedVisitId}`
+    : resolvedPatientId
+    ? `/dashboard/patients/${resolvedPatientId}`
+    : "/dashboard";
+
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">{t("comparison.page.title")}</h1>
         <div className="flex gap-2">
-          <Link href="/dashboard">
+          <Link href={backHref}>
             <Button variant="outline">
               <ArrowLeft className="h-4 w-4 mr-2" />
               {t("comparison.page.back")}

@@ -47,8 +47,7 @@ export function VisitList({ patientId }: VisitListProps) {
     <div className="space-y-3">
       {visits.map((visit) => {
         const xrayCount = visit.xrays?.length || 0;
-        // Analysis count would come from analysis_results - for now 0
-        const analysisCount = 0;
+        const analysisCount = visit.analysis_results?.length || 0;
 
         return (
           <Card key={visit.id} className="p-4">

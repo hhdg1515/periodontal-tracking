@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useXRaysForComparison, useXRay } from "@/lib/hooks/use-xrays-for-comparison";
@@ -11,8 +11,8 @@ interface XRayComparisonViewerProps {
   patientId: string | null;
   baselineId: string | null;
   currentId: string | null;
-  onSelectBaseline: (id: string) => void;
-  onSelectCurrent: (id: string) => void;
+  onSelectBaseline: (id: string | null) => void;
+  onSelectCurrent: (id: string | null) => void;
 }
 
 export function XRayComparisonViewer({
@@ -26,6 +26,7 @@ export function XRayComparisonViewer({
   const { xray: baselineXRay } = useXRay(baselineId);
   const { xray: currentXRay } = useXRay(currentId);
   const { t } = useLanguage();
+  const baselineType = baselineXRay?.xray_type ?? null;
 
   // Calculate time difference between selected X-rays
   const comparisonPeriod = useMemo(() => {
@@ -55,6 +56,25 @@ export function XRayComparisonViewer({
     }
     return translated;
   };
+
+  useEffect(() => {
+    if (!baselineXRay || !xrays) return;
+    if (currentXRay && currentXRay.xray_type === baselineXRay.xray_type) {
+      return;
+    }
+    const candidates = xrays
+      .filter((x) => x.xray_type === baselineXRay.xray_type && x.id !== baselineXRay.id)
+      .sort((a, b) => {
+        const dateA = new Date((a.visit?.visit_date || a.uploaded_at) as string).getTime();
+        const dateB = new Date((b.visit?.visit_date || b.uploaded_at) as string).getTime();
+        return dateB - dateA;
+      });
+    if (candidates.length > 0) {
+      onSelectCurrent(candidates[0].id);
+    } else {
+      onSelectCurrent(null);
+    }
+  }, [baselineXRay, currentXRay, xrays, onSelectCurrent]);
 
   if (!patientId) {
     return (
@@ -171,12 +191,16 @@ export function XRayComparisonViewer({
                 {xrays.map((xray) => {
                   // @ts-ignore - visit is included in the query
                   const visitDate = xray.visit?.visit_date || xray.uploaded_at;
+                  const isTypeMismatch = baselineType && xray.xray_type !== baselineType;
                   return (
                     <button
                       key={xray.id}
-                      onClick={() => onSelectCurrent(xray.id)}
+                      onClick={() => !isTypeMismatch && onSelectCurrent(xray.id)}
+                      disabled={Boolean(isTypeMismatch)}
                       className={`w-full p-3 border rounded-lg text-left transition-colors ${
-                        currentId === xray.id
+                        isTypeMismatch
+                          ? "border-gray-200 bg-gray-50 opacity-70 cursor-not-allowed"
+                          : currentId === xray.id
                           ? "border-blue-500 bg-blue-50"
                           : "hover:border-gray-400"
                       }`}

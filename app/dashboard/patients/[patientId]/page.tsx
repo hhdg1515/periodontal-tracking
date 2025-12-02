@@ -21,6 +21,15 @@ export default function PatientDetailPage() {
   // Fetch patient data
   const { patient: patientData } = usePatient(patientId);
   const { visits } = useVisits(patientId);
+  const totalVisits = visits.length;
+  const totalXrays = visits.reduce(
+    (total, visit) => total + (visit.xrays?.length || 0),
+    0
+  );
+  const totalReports = visits.reduce(
+    (total, visit) => total + (visit.analysis_results?.length || 0),
+    0
+  );
 
   // Use fetched patient data or fallback
   const patient = patientData || {
@@ -110,7 +119,7 @@ export default function PatientDetailPage() {
               <Calendar className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">{t("patientDetail.stats.visits")}</p>
-                <p className="text-2xl font-bold">{visits.length}</p>
+                <p className="text-2xl font-bold">{totalVisits}</p>
               </div>
             </div>
           </CardContent>
@@ -122,7 +131,7 @@ export default function PatientDetailPage() {
               <Upload className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">{t("patientDetail.stats.xrays")}</p>
-                <p className="text-2xl font-bold">{visits.length * 2}</p>
+                <p className="text-2xl font-bold">{totalXrays}</p>
               </div>
             </div>
           </CardContent>
@@ -134,7 +143,7 @@ export default function PatientDetailPage() {
               <FileText className="h-8 w-8 text-blue-600" />
               <div>
                 <p className="text-sm text-gray-600">{t("patientDetail.stats.reports")}</p>
-                <p className="text-2xl font-bold">{visits.length}</p>
+                <p className="text-2xl font-bold">{totalReports}</p>
               </div>
             </div>
           </CardContent>

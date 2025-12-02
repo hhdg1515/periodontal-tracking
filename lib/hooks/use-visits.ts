@@ -1,15 +1,27 @@
 import { useState, useEffect } from 'react';
-import { DEMO_VISITS, getDemoVisitsByPatientId } from '../demo/mock-data';
+import { DEMO_VISITS, getDemoVisitsByPatientId, getDemoXRaysByVisitId } from '../demo/mock-data';
 
 // Convert demo visits to expected format
-const convertDemoVisit = (visit: any) => ({
-  id: visit.id,
-  patient_id: visit.patientId,
-  visit_date: visit.visitDate.toISOString().split('T')[0],
-  visit_type: 'followup', // Default type
-  notes: visit.notes,
-  created_at: visit.visitDate.toISOString(),
-});
+const convertDemoVisit = (visit: any) => {
+  const xrays = getDemoXRaysByVisitId(visit.id).map((xray) => ({
+    id: xray.id,
+    image_url: xray.imageUrl,
+    file_url: xray.imageUrl,
+    xray_type: xray.type,
+    uploaded_at: xray.uploadedAt.toISOString(),
+  }));
+
+  return {
+    id: visit.id,
+    patient_id: visit.patientId,
+    visit_date: visit.visitDate.toISOString().split('T')[0],
+    visit_type: 'followup', // Default type
+    notes: visit.notes,
+    created_at: visit.visitDate.toISOString(),
+    xrays,
+    analysis_results: xrays.length > 0 ? [{ id: `${visit.id}-analysis` }] : [],
+  };
+};
 
 export function useVisits(patientId: string | null) {
   const [visits, setVisits] = useState<any[]>([]);

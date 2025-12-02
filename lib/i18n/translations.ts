@@ -319,6 +319,46 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
             grade_2: "Grade II",
             grade_3: "Grade III",
           },
+          chartTitle: "Site-Specific Analysis",
+          chartSubtitle: "Detailed pocket measurements for each monitored site",
+          stats: {
+            critical: "Sites ≥6mm",
+            warning: "Sites 4-5mm",
+            bleeding: "Bleeding on probing",
+          },
+          table: {
+            site: "Site",
+            depth: "Pocket Depth",
+            attachment: "Attachment Loss",
+            bleeding: "Bleeding",
+            bleedingYes: "Present",
+            bleedingNo: "None",
+            priority: "Priority",
+            priorityLabel: "Priority",
+            bleedLabel: "Bleeding",
+            addSiteTitle: "Add Measurement",
+            toothPlaceholder: "Tooth #",
+            surfacePlaceholder: "Surface (e.g., MB)",
+            addSiteButton: "Add Site",
+            remove: "Remove",
+            empty: "No periodontal findings recorded yet.",
+            actionLabel: "Recommended Action",
+          },
+          priority: {
+            urgent: "Urgent",
+            attention: "Needs Attention",
+            routine: "Routine",
+          },
+          actions: {
+            monitor: "Monitor",
+            srp: "Scaling & Root Planing",
+            surgery: "Surgery",
+            refer: "Refer",
+          },
+          riskList: {
+            title: "High Risk Sites",
+            recommendation: "Recommend surgical evaluation or immediate intervention",
+          },
         },
         impression: {
           title: "Clinical Impression",
@@ -615,6 +655,29 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
       },
       observedAreas: "侦测区域",
       priority: "优先等级",
+    },
+    analyses: {
+      title: "Analysis History",
+      subtitle: "View past X-ray analyses and treatment recommendations",
+      empty: {
+        title: "No Analyses Yet",
+        description: "When you analyze X-rays for your patients, the results will appear here as a historical record.",
+        action: "Go to the Demo page or select a patient to get started with your first analysis.",
+      },
+      cards: {
+        total: {
+          title: "Total Analyses",
+          subtitle: "This month",
+        },
+        patients: {
+          title: "Patients Analyzed",
+          subtitle: "Unique patients",
+        },
+        reports: {
+          title: "Reports Generated",
+          subtitle: "PDF reports",
+        },
+      },
     },
   },
   zh: {
@@ -929,6 +992,46 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
             grade_2: "II 级",
             grade_3: "III 级",
           },
+          chartTitle: "重点测点分析",
+          chartSubtitle: "列出各测点的囊袋深度与附连流失",
+          stats: {
+            critical: "≥6mm 测点",
+            warning: "4-5mm 测点",
+            bleeding: "出血测点",
+          },
+          table: {
+            site: "测点",
+            depth: "囊袋深度",
+            attachment: "附连流失",
+            bleeding: "出血",
+            bleedingYes: "有",
+            bleedingNo: "无",
+            priority: "优先级",
+            priorityLabel: "优先级",
+            bleedLabel: "出血",
+            addSiteTitle: "新增测点",
+            toothPlaceholder: "齿号",
+            surfacePlaceholder: "面向 (例如 MB)",
+            addSiteButton: "新增",
+            remove: "删除",
+            empty: "尚未记录牙周测点资料。",
+            actionLabel: "建议处理",
+          },
+          priority: {
+            urgent: "紧急",
+            attention: "需关注",
+            routine: "例行",
+          },
+          actions: {
+            monitor: "追踪",
+            srp: "刮治/抛光",
+            surgery: "手术",
+            refer: "转诊",
+          },
+          riskList: {
+            title: "高风险测点",
+            recommendation: "建议优先安排外科评估或立即处理",
+          },
         },
         impression: {
           title: "临床判读",
@@ -1103,6 +1206,29 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
       },
       observedAreas: "侦测区域",
       priority: "优先等级",
+    },
+    analyses: {
+      title: "分析纪录",
+      subtitle: "查看历次 X 光分析与治疗建议",
+      empty: {
+        title: "目前尚无分析纪录",
+        description: "当您针对病人进行 X 光分析时，结果会保存于此做为历史参考。",
+        action: "请至示范页面或选择病人以开始第一次分析。",
+      },
+      cards: {
+        total: {
+          title: "分析次数",
+          subtitle: "本月",
+        },
+        patients: {
+          title: "分析病人",
+          subtitle: "独立病人数",
+        },
+        reports: {
+          title: "产生报告",
+          subtitle: "PDF 报告数",
+        },
+      },
     },
   },
 };

@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { DEMO_XRAYS } from '../demo/mock-data';
+import { DEMO_XRAYS, DEMO_VISITS } from '../demo/mock-data';
 
 // Convert demo X-rays to expected format
 const convertDemoXRay = (xray: any) => ({
   id: xray.id,
   visit_id: xray.visitId,
+  patient_id: DEMO_VISITS.find((visit) => visit.id === xray.visitId)?.patientId ?? null,
   image_url: xray.imageUrl,
   file_url: xray.imageUrl, // Keep for backwards compatibility
   xray_type: xray.type, // Use actual anatomical type from demo data
@@ -12,6 +13,16 @@ const convertDemoXRay = (xray: any) => ({
   uploaded_at: xray.uploadedAt.toISOString(),
   upload_date: xray.uploadedAt.toISOString(), // Keep for backwards compatibility
   created_at: xray.uploadedAt.toISOString(),
+  visit: (() => {
+    const visit = DEMO_VISITS.find((v) => v.id === xray.visitId);
+    if (!visit) return null;
+    return {
+      id: visit.id,
+      patient_id: visit.patientId,
+      visit_date: visit.visitDate.toISOString(),
+      notes: visit.notes,
+    };
+  })(),
 });
 
 /**

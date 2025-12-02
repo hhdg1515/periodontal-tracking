@@ -2,16 +2,18 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Calendar, User } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function AnalysesPage() {
+  const { t } = useLanguage();
   return (
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Analysis History
+          {t("analyses.title")}
         </h1>
         <p className="text-gray-600">
-          View past X-ray analyses and treatment recommendations
+          {t("analyses.subtitle")}
         </p>
       </div>
 
@@ -20,13 +22,13 @@ export default function AnalysesPage() {
         <CardContent className="pt-12 pb-12 text-center">
           <FileText className="h-16 w-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-semibold text-gray-700 mb-2">
-            No Analyses Yet
+            {t("analyses.empty.title")}
           </h3>
           <p className="text-gray-600 mb-6 max-w-md mx-auto">
-            When you analyze X-rays for your patients, the results will appear here as a historical record.
+            {t("analyses.empty.description")}
           </p>
           <p className="text-sm text-gray-500">
-            Go to the Demo page or select a patient to get started with your first analysis.
+            {t("analyses.empty.action")}
           </p>
         </CardContent>
       </Card>
@@ -37,12 +39,12 @@ export default function AnalysesPage() {
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              Total Analyses
+              {t("analyses.cards.total.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gray-400">0</div>
-            <p className="text-xs text-gray-500 mt-1">This month</p>
+            <p className="text-xs text-gray-500 mt-1">{t("analyses.cards.total.subtitle")}</p>
           </CardContent>
         </Card>
 
@@ -50,12 +52,12 @@ export default function AnalysesPage() {
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <User className="h-4 w-4" />
-              Patients Analyzed
+              {t("analyses.cards.patients.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gray-400">0</div>
-            <p className="text-xs text-gray-500 mt-1">Unique patients</p>
+            <p className="text-xs text-gray-500 mt-1">{t("analyses.cards.patients.subtitle")}</p>
           </CardContent>
         </Card>
 
@@ -63,12 +65,12 @@ export default function AnalysesPage() {
           <CardHeader>
             <CardTitle className="text-sm font-medium flex items-center gap-2">
               <FileText className="h-4 w-4" />
-              Reports Generated
+              {t("analyses.cards.reports.title")}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-gray-400">0</div>
-            <p className="text-xs text-gray-500 mt-1">PDF reports</p>
+            <p className="text-xs text-gray-500 mt-1">{t("analyses.cards.reports.subtitle")}</p>
           </CardContent>
         </Card>
       </div>
