@@ -6,7 +6,7 @@ import { DEMO_PATIENTS } from '../demo/mock-data';
 const DEMO_CLINIC_ID = 'demo-clinic-id';
 
 // Convert mock patient data to the expected format
-const mockPatients = DEMO_PATIENTS.map(patient => ({
+const basePatients = DEMO_PATIENTS.map(patient => ({
   id: patient.id,
   patient_id: patient.id,
   first_name: patient.firstName,
@@ -21,14 +21,30 @@ const mockPatients = DEMO_PATIENTS.map(patient => ({
   updated_at: new Date().toISOString(),
 }));
 
+// Load persisted patients from localStorage and merge with base patients
+const getPersistedPatients = () => {
+  if (typeof window === 'undefined') return basePatients;
+
+  try {
+    const storedJson = localStorage.getItem('mock_patients');
+    const stored = storedJson ? JSON.parse(storedJson) : [];
+    return [...basePatients, ...stored];
+  } catch {
+    return basePatients;
+  }
+};
+
+const mockPatients = getPersistedPatients();
+
 export function usePatients() {
   const [patients, setPatients] = useState(mockPatients);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(null);
 
   const mutate = () => {
-    // For demo purposes, just reset to mock data
-    setPatients(mockPatients);
+    // Reload from localStorage to get newly added patients
+    const updatedPatients = getPersistedPatients();
+    setPatients(updatedPatients);
   };
 
   return {
@@ -51,15 +67,17 @@ export function usePatient(id: string | null) {
     }
 
     setIsLoading(true);
-    // Simulate API call with mock data
-    const foundPatient = mockPatients.find(p => p.id === id);
+    // Get current patients including persisted ones
+    const allPatients = getPersistedPatients();
+    const foundPatient = allPatients.find(p => p.id === id);
     setPatient(foundPatient || null);
     setIsLoading(false);
   }, [id]);
 
   const mutate = () => {
     if (id) {
-      const foundPatient = mockPatients.find(p => p.id === id);
+      const allPatients = getPersistedPatients();
+      const foundPatient = allPatients.find(p => p.id === id);
       setPatient(foundPatient || null);
     }
   };
@@ -85,7 +103,8 @@ export function usePatientSearch(query: string) {
 
     setIsLoading(true);
     const lowerQuery = query.toLowerCase();
-    const filtered = mockPatients.filter(p =>
+    const allPatients = getPersistedPatients();
+    const filtered = allPatients.filter(p =>
       p.first_name.toLowerCase().includes(lowerQuery) ||
       p.last_name.toLowerCase().includes(lowerQuery) ||
       p.patient_id.toLowerCase().includes(lowerQuery)

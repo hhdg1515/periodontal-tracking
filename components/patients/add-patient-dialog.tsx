@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { patientsService } from "@/lib/supabase/patients-service";
 import { DEMO_CLINIC_ID } from "@/lib/hooks/use-patients";
 
 interface AddPatientDialogProps {
@@ -45,8 +44,8 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
       const timestamp = Date.now().toString().slice(-6);
       const patientId = `${formData.firstName.charAt(0)}${formData.lastName.charAt(0)}-${timestamp}`.toUpperCase();
 
-      await patientsService.create({
-        clinic_id: DEMO_CLINIC_ID,
+      const newPatient = {
+        id: patientId,
         patient_id: patientId,
         first_name: formData.firstName,
         last_name: formData.lastName,
@@ -55,7 +54,16 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
         phone: formData.phone || null,
         is_smoker: formData.isSmoker,
         has_diabetes: formData.hasDiabetes,
-      });
+        clinic_id: DEMO_CLINIC_ID,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      // Store in localStorage to persist added patients
+      const storedPatientsJson = localStorage.getItem('mock_patients');
+      const storedPatients = storedPatientsJson ? JSON.parse(storedPatientsJson) : [];
+      storedPatients.push(newPatient);
+      localStorage.setItem('mock_patients', JSON.stringify(storedPatients));
 
       // Reset form and close dialog
       setFormData({
