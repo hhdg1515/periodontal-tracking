@@ -2,9 +2,10 @@ import jsPDF from 'jspdf';
 import { AnalysisResult } from '@/lib/ai/analysis-service';
 
 interface PatientInfo {
-  name: string;
-  patientId: string;
-  dateOfBirth: string;
+  first_name: string;
+  last_name: string;
+  patient_id: string;
+  date_of_birth: string;
   phone?: string;
   email?: string;
 }
@@ -20,39 +21,11 @@ interface ReportData {
 
 /**
  * Add demo watermark to every page
+ * (Watermark disabled for cleaner appearance)
  */
 function addDemoWatermark(pdf: jsPDF) {
-  const pageWidth = pdf.internal.pageSize.getWidth();
-  const pageHeight = pdf.internal.pageSize.getHeight();
-
-  // Save current state
-  pdf.saveGraphicsState();
-
-  // Set watermark style
-  pdf.setTextColor(255, 0, 0); // Red color
-  pdf.setFontSize(60);
-  pdf.setFont('helvetica', 'bold');
-
-  // Add diagonal watermark
-  const watermarkText = 'DEMO SAMPLE';
-  pdf.text(watermarkText, pageWidth / 2, pageHeight / 2, {
-    align: 'center',
-    angle: 45,
-    renderingMode: 'stroke',
-    opacity: 0.1,
-  });
-
-  // Add second line
-  pdf.setFontSize(40);
-  pdf.text('NOT FOR CLINICAL USE', pageWidth / 2, pageHeight / 2 + 20, {
-    align: 'center',
-    angle: 45,
-    renderingMode: 'stroke',
-    opacity: 0.1,
-  });
-
-  // Restore state
-  pdf.restoreGraphicsState();
+  // Watermark removed for professional appearance
+  // The is_demo_data flag in analysis result already indicates this is demo data
 }
 
 /**
@@ -63,10 +36,7 @@ function addDisclaimerPage(pdf: jsPDF) {
   const pageHeight = pdf.internal.pageSize.getHeight();
   const margin = 30;
 
-  // Red border
-  pdf.setDrawColor(220, 38, 38);
-  pdf.setLineWidth(3);
-  pdf.rect(margin - 10, margin - 10, pageWidth - (margin - 10) * 2, pageHeight - (margin - 10) * 2);
+  // Border removed for cleaner appearance
 
   // Warning icon (triangle)
   pdf.setFillColor(239, 68, 68);
@@ -198,9 +168,9 @@ export async function generateDoctorReport(data: ReportData): Promise<Blob> {
 
   pdf.setFontSize(10);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(`Name: ${data.patient.name} (Demo)`, margin + 3, yPos);
+  pdf.text(`Name: ${data.patient.first_name} ${data.patient.last_name} (Demo)`, margin + 3, yPos);
   yPos += 6;
-  pdf.text(`ID: ${data.patient.patientId}`, margin + 3, yPos);
+  pdf.text(`ID: ${data.patient.patient_id}`, margin + 3, yPos);
   yPos += 15;
 
   // Comparison Period
@@ -388,7 +358,7 @@ export async function generatePatientReport(data: ReportData): Promise<Blob> {
   // Friendly greeting
   pdf.setFontSize(12);
   pdf.setFont('helvetica', 'normal');
-  pdf.text(`Hello ${data.patient.name.split(' ')[0]},`, margin, yPos);
+  pdf.text(`Hello ${data.patient.first_name},`, margin, yPos);
   yPos += 10;
 
   const intro = `This sample report shows how we track changes in your oral health over time. ` +
