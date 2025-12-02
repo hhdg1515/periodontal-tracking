@@ -6,17 +6,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XRayAnnotationViewer } from "@/components/analysis/xray-annotation-viewer";
 import { analyzeXRayComparison } from "@/lib/ai/analysis-service";
 import { generateDoctorReport, generatePatientReport, downloadPDF } from "@/lib/reports/pdf-generator";
-import { FileText, Download, Loader2 } from "lucide-react";
+import { DEMO_PATIENTS, getDemoPatientWithXRays } from "@/lib/demo/mock-data";
+import { FileText, Download, Loader2, ChevronDown } from "lucide-react";
 import type { AnalysisResult } from "@/lib/ai/analysis-service";
 
 export default function DemoPage() {
+  const [selectedPatientId, setSelectedPatientId] = useState(DEMO_PATIENTS[0].id);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
 
-  // Demo X-ray image URLs (you can replace these with actual dental X-ray images)
-  const demoBaselineImage = "https://placehold.co/600x400/1e40af/white?text=Baseline+X-Ray";
-  const demoCurrentImage = "https://placehold.co/600x400/dc2626/white?text=Current+X-Ray";
+  // Get selected patient data with X-rays
+  const patientData = getDemoPatientWithXRays(selectedPatientId);
+
+  // Get X-ray URLs from mock data
+  const demoBaselineImage = patientData?.baselineXRay?.imageUrl || "https://placehold.co/600x400/1e40af/white?text=Baseline+X-Ray";
+  const demoCurrentImage = patientData?.currentXRay?.imageUrl || "https://placehold.co/600x400/dc2626/white?text=Current+X-Ray";
 
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
@@ -32,29 +37,32 @@ export default function DemoPage() {
   };
 
   const handleGenerateReport = async (type: "doctor" | "patient") => {
-    if (!analysis) return;
+    if (!analysis || !patientData) return;
 
     setIsGeneratingReport(true);
     try {
+      const baselineDate = patientData.xrays[0]?.uploadedAt || new Date();
+      const currentDate = patientData.xrays[1]?.uploadedAt || new Date();
+
       const reportData = {
         patient: {
-          first_name: "Demo",
-          last_name: "Patient",
-          patient_id: "DEMO-001",
-          date_of_birth: "1980-01-01",
+          first_name: patientData.patient.firstName,
+          last_name: patientData.patient.lastName,
+          patient_id: patientData.patient.id,
+          date_of_birth: patientData.patient.dateOfBirth,
         },
         analysis,
-        baselineDate: "2023-01-15",
-        currentDate: "2024-01-15",
-        clinicName: "Demo Dental Clinic",
-        doctorName: "Dr. Demo",
+        baselineDate: baselineDate instanceof Date ? baselineDate.toISOString().split('T')[0] : baselineDate,
+        currentDate: currentDate instanceof Date ? currentDate.toISOString().split('T')[0] : currentDate,
+        clinicName: "Periodontal Tracking Clinic",
+        doctorName: "Dr. Analysis System",
       };
 
       const pdf = type === "doctor"
         ? await generateDoctorReport(reportData)
         : await generatePatientReport(reportData);
 
-      downloadPDF(pdf, `${type}-report-demo.pdf`);
+      downloadPDF(pdf, `${type}-report-${patientData.patient.id}.pdf`);
     } catch (error) {
       console.error("Report generation failed:", error);
       alert("Failed to generate report. Please try again.");
@@ -67,37 +75,85 @@ export default function DemoPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Phase 4 Demo - AI Analysis
+          AI X-Ray Analysis Demo
         </h1>
-        <p className="text-gray-600">
-          This demo showcases the AI-powered X-ray analysis and PDF report generation features.
+        <p className="text-gray-600 mb-6">
+          Select a sample patient and click "Run AI Analysis" to see how our AI system detects and analyzes periodontal changes between baseline and current X-rays.
         </p>
+
+        {/* Patient Selector */}
+        <Card className="bg-blue-50 border-blue-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <label className="text-sm font-medium text-gray-700">
+                Select Sample Patient:
+              </label>
+              <select
+                value={selectedPatientId}
+                onChange={(e) => {
+                  setSelectedPatientId(e.target.value);
+                  setAnalysis(null); // Reset analysis when changing patient
+                }}
+                className="flex-1 max-w-xs px-3 py-2 border border-gray-300 rounded-lg bg-white shadow-sm hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                {DEMO_PATIENTS.map((patient) => (
+                  <option key={patient.id} value={patient.id}>
+                    {patient.firstName} {patient.lastName} ({patient.id})
+                  </option>
+                ))}
+              </select>
+              {patientData && (
+                <div className="text-sm text-gray-600 ml-4">
+                  DOB: {patientData.patient.dateOfBirth} • {patientData.patient.isSmoker ? 'Smoker' : 'Non-smoker'}
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Demo X-rays */}
       <div className="grid md:grid-cols-2 gap-6 mb-6">
         <Card>
           <CardHeader>
-            <CardTitle>Baseline X-Ray (2023)</CardTitle>
+            <CardTitle className="text-lg">
+              Baseline X-Ray
+            </CardTitle>
+            {patientData?.baselineXRay && (
+              <p className="text-sm text-gray-600 mt-2">
+                Taken: {patientData.baselineXRay.uploadedAt instanceof Date
+                  ? patientData.baselineXRay.uploadedAt.toLocaleDateString()
+                  : String(patientData.baselineXRay.uploadedAt)}
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <img
               src={demoBaselineImage}
               alt="Baseline X-ray"
-              className="w-full h-64 object-cover rounded border"
+              className="w-full h-64 object-cover rounded border bg-gray-100"
             />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader>
-            <CardTitle>Current X-Ray (2024)</CardTitle>
+            <CardTitle className="text-lg">
+              Current X-Ray
+            </CardTitle>
+            {patientData?.currentXRay && (
+              <p className="text-sm text-gray-600 mt-2">
+                Taken: {patientData.currentXRay.uploadedAt instanceof Date
+                  ? patientData.currentXRay.uploadedAt.toLocaleDateString()
+                  : String(patientData.currentXRay.uploadedAt)}
+              </p>
+            )}
           </CardHeader>
           <CardContent>
             <img
               src={demoCurrentImage}
               alt="Current X-ray"
-              className="w-full h-64 object-cover rounded border"
+              className="w-full h-64 object-cover rounded border bg-gray-100"
             />
           </CardContent>
         </Card>

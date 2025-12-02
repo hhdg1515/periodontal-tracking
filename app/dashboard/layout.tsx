@@ -1,8 +1,11 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, Users, FolderOpen, BarChart3, Settings } from "lucide-react";
+import { Activity, Users, FolderOpen, BarChart3, Settings, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
 
 export default function DashboardLayout({
   children,
@@ -10,6 +13,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
 
   const isActive = (href: string) => {
     if (href === "/dashboard") {
@@ -24,6 +28,11 @@ export default function DashboardLayout({
     const inactiveClass = "hover:bg-gray-100 text-gray-700";
     return `${baseClass} ${isActive(href) ? activeClass : inactiveClass}`;
   };
+
+  const handlePatientAdded = () => {
+    setIsAddPatientOpen(false);
+    // Optionally trigger a refresh or notification here
+  };
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top Navigation */}
@@ -34,6 +43,14 @@ export default function DashboardLayout({
             <span className="text-xl font-bold text-gray-900">PerioTrack AI</span>
           </Link>
           <div className="flex items-center gap-4">
+            <Button
+              onClick={() => setIsAddPatientOpen(true)}
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Patient
+            </Button>
             <span className="text-sm text-gray-600">Demo Clinic</span>
             <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-sm font-medium text-blue-600">DC</span>
@@ -82,6 +99,13 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Global Add Patient Dialog */}
+      <AddPatientDialog
+        open={isAddPatientOpen}
+        onOpenChange={setIsAddPatientOpen}
+        onSuccess={handlePatientAdded}
+      />
     </div>
   );
 }
