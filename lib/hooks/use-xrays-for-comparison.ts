@@ -7,7 +7,7 @@ const convertDemoXRay = (xray: any) => ({
   visit_id: xray.visitId,
   image_url: xray.imageUrl,
   file_url: xray.imageUrl, // Keep for backwards compatibility
-  xray_type: xray.type === 'baseline' ? 'periapical' : 'bitewing_right',
+  xray_type: xray.type, // Use actual anatomical type from demo data
   analysis_status: 'analyzed',
   uploaded_at: xray.uploadedAt.toISOString(),
   upload_date: xray.uploadedAt.toISOString(), // Keep for backwards compatibility
@@ -56,7 +56,7 @@ export function useXRaysForComparison(patientId: string | null) {
  * Hook to fetch a specific X-ray by ID
  */
 export function useXRay(xrayId: string | null) {
-  const [xray, setXRay] = useState(null);
+  const [xray, setXRay] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 

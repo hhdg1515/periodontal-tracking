@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, AlertCircle, CheckCircle2, Info } from "lucide-react";
 import { ClinicalAssessment, ClinicalAssessmentInsert } from "@/lib/types/clinical";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface ClinicalAssessmentFormProps {
   visitId: string;
@@ -22,6 +23,7 @@ export function ClinicalAssessmentForm({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const [formData, setFormData] = useState<Partial<ClinicalAssessmentInsert>>({
     visit_id: visitId,
@@ -65,14 +67,14 @@ export function ClinicalAssessmentForm({
       await new Promise(resolve => setTimeout(resolve, 300));
 
       if (existingAssessment?.id) {
-        setSuccessMessage('Clinical assessment updated successfully');
+        setSuccessMessage(t("clinical.success.updated"));
       } else {
-        setSuccessMessage('Clinical assessment saved successfully');
+        setSuccessMessage(t("clinical.success.created"));
       }
       onSaveSuccess?.();
     } catch (err: any) {
       console.error('Error saving assessment:', err);
-      setError(err.message || 'Failed to save assessment');
+      setError(err.message || t("clinical.errors.saveFailed"));
     } finally {
       setIsSubmitting(false);
     }
@@ -86,9 +88,7 @@ export function ClinicalAssessmentForm({
           <div className="flex items-start gap-2">
             <Info className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm text-blue-900">
-              <strong>Clinical Assessment Tool:</strong> Use this form to systematically
-              record clinical findings. This helps ensure comprehensive evaluation and
-              proper documentation for treatment planning.
+              <strong>{t("clinical.banner.title")}</strong> {t("clinical.banner.description")}
             </div>
           </div>
         </CardContent>
@@ -120,7 +120,7 @@ export function ClinicalAssessmentForm({
       {/* Symptoms Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Patient-Reported Symptoms</CardTitle>
+          <CardTitle className="text-lg">{t("clinical.sections.symptoms.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
@@ -134,7 +134,7 @@ export function ClinicalAssessmentForm({
                 }
                 className="rounded"
               />
-              <span className="text-sm font-medium">Spontaneous pain</span>
+              <span className="text-sm font-medium">{t("clinical.sections.symptoms.labels.spontaneousPain")}</span>
             </label>
 
             <label className="flex items-center space-x-2 cursor-pointer">
@@ -146,7 +146,7 @@ export function ClinicalAssessmentForm({
                 }
                 className="rounded"
               />
-              <span className="text-sm font-medium">Palpation tenderness</span>
+              <span className="text-sm font-medium">{t("clinical.sections.symptoms.labels.palpationTenderness")}</span>
             </label>
 
             <label className="flex items-center space-x-2 cursor-pointer">
@@ -158,7 +158,7 @@ export function ClinicalAssessmentForm({
                 }
                 className="rounded"
               />
-              <span className="text-sm font-medium">Swelling</span>
+              <span className="text-sm font-medium">{t("clinical.sections.symptoms.labels.swelling")}</span>
             </label>
 
             <label className="flex items-center space-x-2 cursor-pointer">
@@ -170,15 +170,15 @@ export function ClinicalAssessmentForm({
                 }
                 className="rounded"
               />
-              <span className="text-sm font-medium">Sinus tract present</span>
+              <span className="text-sm font-medium">{t("clinical.sections.symptoms.labels.sinusTract")}</span>
             </label>
           </div>
 
           {/* Thermal sensitivity */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Thermal Sensitivity</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.symptoms.thermalLabel")}</Label>
             <div className="flex gap-3">
-              {['none', 'mild', 'severe'].map((level) => (
+              {["none", "mild", "severe"].map((level) => (
                 <label key={level} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
@@ -189,7 +189,7 @@ export function ClinicalAssessmentForm({
                       setFormData({ ...formData, thermal_sensitivity: e.target.value as any })
                     }
                   />
-                  <span className="text-sm capitalize">{level}</span>
+                  <span className="text-sm capitalize">{t(`clinical.sections.symptoms.levels.${level}`)}</span>
                 </label>
               ))}
             </div>
@@ -197,9 +197,9 @@ export function ClinicalAssessmentForm({
 
           {/* Percussion sensitivity */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Percussion Sensitivity</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.symptoms.percussionLabel")}</Label>
             <div className="flex gap-3">
-              {['none', 'mild', 'severe'].map((level) => (
+              {["none", "mild", "severe"].map((level) => (
                 <label key={level} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
@@ -210,7 +210,7 @@ export function ClinicalAssessmentForm({
                       setFormData({ ...formData, percussion_sensitivity: e.target.value as any })
                     }
                   />
-                  <span className="text-sm capitalize">{level}</span>
+                  <span className="text-sm capitalize">{t(`clinical.sections.symptoms.levels.${level}`)}</span>
                 </label>
               ))}
             </div>
@@ -221,20 +221,20 @@ export function ClinicalAssessmentForm({
       {/* Clinical Tests Section */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Clinical Tests Performed</CardTitle>
+          <CardTitle className="text-lg">{t("clinical.sections.tests.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Pulp vitality - Cold test */}
           <div>
             <Label className="text-sm font-medium mb-2 block">
-              Pulp Vitality - Cold Test
+              {t("clinical.sections.tests.pulpVitalityCold")}
             </Label>
             <div className="flex gap-3 flex-wrap">
               {[
-                { value: 'not_tested', label: 'Not Tested', color: 'text-gray-600' },
-                { value: 'positive', label: 'Positive', color: 'text-green-600' },
-                { value: 'delayed', label: 'Delayed', color: 'text-yellow-600' },
-                { value: 'negative', label: 'Negative', color: 'text-red-600' },
+                { value: "not_tested", color: "text-gray-600" },
+                { value: "positive", color: "text-green-600" },
+                { value: "delayed", color: "text-yellow-600" },
+                { value: "negative", color: "text-red-600" },
               ].map((option) => (
                 <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
                   <input
@@ -246,7 +246,9 @@ export function ClinicalAssessmentForm({
                       setFormData({ ...formData, pulp_vitality_cold: e.target.value as any })
                     }
                   />
-                  <span className={`text-sm ${option.color}`}>{option.label}</span>
+                  <span className={`text-sm ${option.color}`}>
+                    {t(`clinical.sections.tests.pulpOptions.${option.value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -254,25 +256,22 @@ export function ClinicalAssessmentForm({
 
           {/* Percussion test */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Percussion Test</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.tests.percussionTest")}</Label>
             <div className="flex gap-3 flex-wrap">
-              {[
-                { value: 'not_tested', label: 'Not Tested' },
-                { value: 'normal', label: 'Normal' },
-                { value: 'sensitive', label: 'Sensitive' },
-                { value: 'painful', label: 'Painful' },
-              ].map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+              {["not_tested", "normal", "sensitive", "painful"].map((value) => (
+                <label key={value} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     name="percussion_test"
-                    value={option.value}
-                    checked={formData.percussion_test === option.value}
+                    value={value}
+                    checked={formData.percussion_test === value}
                     onChange={(e) =>
                       setFormData({ ...formData, percussion_test: e.target.value as any })
                     }
                   />
-                  <span className="text-sm">{option.label}</span>
+                  <span className="text-sm">
+                    {t(`clinical.sections.tests.percussionOptions.${value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -280,26 +279,22 @@ export function ClinicalAssessmentForm({
 
           {/* Mobility */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Tooth Mobility</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.tests.mobility")}</Label>
             <div className="flex gap-3 flex-wrap">
-              {[
-                { value: 'not_tested', label: 'Not Tested' },
-                { value: 'normal', label: 'Normal (Grade 0)' },
-                { value: 'grade_1', label: 'Grade I' },
-                { value: 'grade_2', label: 'Grade II' },
-                { value: 'grade_3', label: 'Grade III' },
-              ].map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+              {["not_tested", "normal", "grade_1", "grade_2", "grade_3"].map((value) => (
+                <label key={value} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     name="mobility_grade"
-                    value={option.value}
-                    checked={formData.mobility_grade === option.value}
+                    value={value}
+                    checked={formData.mobility_grade === value}
                     onChange={(e) =>
                       setFormData({ ...formData, mobility_grade: e.target.value as any })
                     }
                   />
-                  <span className="text-sm">{option.label}</span>
+                  <span className="text-sm">
+                    {t(`clinical.sections.tests.mobilityOptions.${value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -310,20 +305,20 @@ export function ClinicalAssessmentForm({
       {/* Periodontal Measurements */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Periodontal Measurements</CardTitle>
+          <CardTitle className="text-lg">{t("clinical.sections.periodontal.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="pocket_depth" className="text-sm font-medium">
-                Maximum Pocket Depth (mm)
+                {t("clinical.sections.periodontal.pocketDepth")}
               </Label>
               <Input
                 id="pocket_depth"
                 type="number"
                 min="0"
                 max="15"
-                value={formData.pocket_depth_max || ''}
+                value={formData.pocket_depth_max || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -333,19 +328,19 @@ export function ClinicalAssessmentForm({
                 placeholder="e.g., 5"
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">Normal: ≤3mm</p>
+              <p className="text-xs text-gray-500 mt-1">{t("clinical.sections.periodontal.pocketHelper")}</p>
             </div>
 
             <div>
               <Label htmlFor="attachment_loss" className="text-sm font-medium">
-                Maximum Attachment Loss (mm)
+                {t("clinical.sections.periodontal.attachmentLoss")}
               </Label>
               <Input
                 id="attachment_loss"
                 type="number"
                 min="0"
                 max="15"
-                value={formData.attachment_loss_max || ''}
+                value={formData.attachment_loss_max || ""}
                 onChange={(e) =>
                   setFormData({
                     ...formData,
@@ -355,7 +350,7 @@ export function ClinicalAssessmentForm({
                 placeholder="e.g., 4"
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">Concern if &gt;3mm</p>
+              <p className="text-xs text-gray-500 mt-1">{t("clinical.sections.periodontal.attachmentHelper")}</p>
             </div>
           </div>
 
@@ -368,31 +363,27 @@ export function ClinicalAssessmentForm({
               }
               className="rounded"
             />
-            <span className="text-sm font-medium">Bleeding on Probing (BOP)</span>
+            <span className="text-sm font-medium">{t("clinical.sections.periodontal.bleeding")}</span>
           </label>
 
           {/* Furcation involvement */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Furcation Involvement</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.periodontal.furcation")}</Label>
             <div className="flex gap-3 flex-wrap">
-              {[
-                { value: 'not_assessed', label: 'Not Assessed' },
-                { value: 'none', label: 'None' },
-                { value: 'grade_1', label: 'Grade I' },
-                { value: 'grade_2', label: 'Grade II' },
-                { value: 'grade_3', label: 'Grade III' },
-              ].map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+              {["not_assessed", "none", "grade_1", "grade_2", "grade_3"].map((value) => (
+                <label key={value} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     name="furcation_involvement"
-                    value={option.value}
-                    checked={formData.furcation_involvement === option.value}
+                    value={value}
+                    checked={formData.furcation_involvement === value}
                     onChange={(e) =>
                       setFormData({ ...formData, furcation_involvement: e.target.value as any })
                     }
                   />
-                  <span className="text-sm">{option.label}</span>
+                  <span className="text-sm">
+                    {t(`clinical.sections.periodontal.furcationOptions.${value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -403,31 +394,27 @@ export function ClinicalAssessmentForm({
       {/* Clinical Impression */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Clinical Impression</CardTitle>
+          <CardTitle className="text-lg">{t("clinical.sections.impression.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Perio status */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Periodontal Status</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.impression.perioStatus")}</Label>
             <div className="flex gap-3 flex-wrap">
-              {[
-                { value: 'healthy', label: 'Healthy' },
-                { value: 'gingivitis', label: 'Gingivitis' },
-                { value: 'mild', label: 'Mild Periodontitis' },
-                { value: 'moderate', label: 'Moderate Periodontitis' },
-                { value: 'severe', label: 'Severe Periodontitis' },
-              ].map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+              {["healthy", "gingivitis", "mild", "moderate", "severe"].map((value) => (
+                <label key={value} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     name="perio_status"
-                    value={option.value}
-                    checked={formData.perio_status === option.value}
+                    value={value}
+                    checked={formData.perio_status === value}
                     onChange={(e) =>
                       setFormData({ ...formData, perio_status: e.target.value as any })
                     }
                   />
-                  <span className="text-sm">{option.label}</span>
+                  <span className="text-sm">
+                    {t(`clinical.sections.impression.perioOptions.${value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -435,24 +422,22 @@ export function ClinicalAssessmentForm({
 
           {/* Endo concern */}
           <div>
-            <Label className="text-sm font-medium mb-2 block">Endodontic Concern</Label>
+            <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.impression.endoConcern")}</Label>
             <div className="flex gap-3 flex-wrap">
-              {[
-                { value: 'none', label: 'None' },
-                { value: 'suspected', label: 'Suspected' },
-                { value: 'confirmed', label: 'Confirmed' },
-              ].map((option) => (
-                <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+              {["none", "suspected", "confirmed"].map((value) => (
+                <label key={value} className="flex items-center space-x-2 cursor-pointer">
                   <input
                     type="radio"
                     name="endo_concern"
-                    value={option.value}
-                    checked={formData.endo_concern === option.value}
+                    value={value}
+                    checked={formData.endo_concern === value}
                     onChange={(e) =>
                       setFormData({ ...formData, endo_concern: e.target.value as any })
                     }
                   />
-                  <span className="text-sm">{option.label}</span>
+                  <span className="text-sm">
+                    {t(`clinical.sections.impression.endoOptions.${value}`)}
+                  </span>
                 </label>
               ))}
             </div>
@@ -468,7 +453,7 @@ export function ClinicalAssessmentForm({
               className="rounded"
             />
             <span className="text-sm font-medium">
-              Perio-Endo Combined Lesion Suspected
+              {t("clinical.sections.impression.combinedLesion")}
             </span>
           </label>
         </CardContent>
@@ -477,7 +462,7 @@ export function ClinicalAssessmentForm({
       {/* Follow-up Needs */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Follow-up Needs</CardTitle>
+          <CardTitle className="text-lg">{t("clinical.sections.followUp.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           <label className="flex items-center space-x-2 cursor-pointer">
@@ -489,7 +474,7 @@ export function ClinicalAssessmentForm({
               }
               className="rounded"
             />
-            <span className="text-sm font-medium">Requires Endodontic Evaluation</span>
+            <span className="text-sm font-medium">{t("clinical.sections.followUp.endo")}</span>
           </label>
 
           <label className="flex items-center space-x-2 cursor-pointer">
@@ -501,7 +486,7 @@ export function ClinicalAssessmentForm({
               }
               className="rounded"
             />
-            <span className="text-sm font-medium">Requires Periodontal Treatment</span>
+            <span className="text-sm font-medium">{t("clinical.sections.followUp.perio")}</span>
           </label>
 
           <label className="flex items-center space-x-2 cursor-pointer">
@@ -513,29 +498,27 @@ export function ClinicalAssessmentForm({
               }
               className="rounded"
             />
-            <span className="text-sm font-medium">Requires Specialist Referral</span>
+            <span className="text-sm font-medium">{t("clinical.sections.followUp.referral")}</span>
           </label>
 
           {formData.requires_specialist_referral && (
             <div className="ml-6">
-              <Label className="text-sm font-medium mb-2 block">Referral To</Label>
+              <Label className="text-sm font-medium mb-2 block">{t("clinical.sections.followUp.referralTo")}</Label>
               <div className="flex gap-3 flex-wrap">
-                {[
-                  { value: 'endodontist', label: 'Endodontist' },
-                  { value: 'periodontist', label: 'Periodontist' },
-                  { value: 'oral_surgeon', label: 'Oral Surgeon' },
-                ].map((option) => (
-                  <label key={option.value} className="flex items-center space-x-2 cursor-pointer">
+                {["endodontist", "periodontist", "oral_surgeon"].map((value) => (
+                  <label key={value} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="radio"
                       name="referral_specialty"
-                      value={option.value}
-                      checked={formData.referral_specialty === option.value}
+                      value={value}
+                      checked={formData.referral_specialty === value}
                       onChange={(e) =>
                         setFormData({ ...formData, referral_specialty: e.target.value as any })
                       }
                     />
-                    <span className="text-sm">{option.label}</span>
+                    <span className="text-sm">
+                      {t(`clinical.sections.followUp.referralOptions.${value}`)}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -547,37 +530,37 @@ export function ClinicalAssessmentForm({
       {/* Clinical Notes */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Clinical Notes</CardTitle>
+          <CardTitle className="text-lg">{t("clinical.sections.notes.title")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <Label htmlFor="clinical_notes" className="text-sm font-medium">
-              General Clinical Notes
+              {t("clinical.sections.notes.general")}
             </Label>
             <textarea
               id="clinical_notes"
               rows={4}
-              value={formData.clinical_notes || ''}
+              value={formData.clinical_notes || ""}
               onChange={(e) =>
                 setFormData({ ...formData, clinical_notes: e.target.value })
               }
-              placeholder="Document clinical findings, patient history, and any relevant observations..."
+              placeholder={t("clinical.sections.notes.generalPlaceholder")}
               className="mt-1 w-full px-3 py-2 border rounded-md text-sm"
             />
           </div>
 
           <div>
             <Label htmlFor="differential_diagnosis" className="text-sm font-medium">
-              Differential Diagnosis / Considerations
+              {t("clinical.sections.notes.differential")}
             </Label>
             <textarea
               id="differential_diagnosis"
               rows={3}
-              value={formData.differential_diagnosis || ''}
+              value={formData.differential_diagnosis || ""}
               onChange={(e) =>
                 setFormData({ ...formData, differential_diagnosis: e.target.value })
               }
-              placeholder="List potential diagnoses and clinical reasoning..."
+              placeholder={t("clinical.sections.notes.differentialPlaceholder")}
               className="mt-1 w-full px-3 py-2 border rounded-md text-sm"
             />
           </div>
@@ -593,7 +576,7 @@ export function ClinicalAssessmentForm({
         >
           {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
           <Save className="h-4 w-4 mr-2" />
-          {existingAssessment ? 'Update Assessment' : 'Save Assessment'}
+          {existingAssessment ? t("clinical.buttons.update") : t("clinical.buttons.save")}
         </Button>
       </div>
     </form>

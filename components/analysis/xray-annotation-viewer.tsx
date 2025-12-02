@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ChangeIndicator } from "@/lib/ai/analysis-service";
 import { AlertCircle } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface XRayAnnotationViewerProps {
   imageUrl: string;
@@ -15,12 +16,24 @@ interface XRayAnnotationViewerProps {
 export function XRayAnnotationViewer({
   imageUrl,
   indicators,
-  title = "Annotated X-Ray",
+  title,
 }: XRayAnnotationViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const [hoveredIndicator, setHoveredIndicator] = useState<ChangeIndicator | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
+  const { t } = useLanguage();
+  const resolvedTitle = title || t("analysisViewer.annotatedTitle");
+  const getChangeLevelLabel = (level: string) => {
+    const key = `comparison.analysis.changeLevels.${level}` as const;
+    const translated = t(key);
+    return translated === key ? level : translated;
+  };
+  const getPriorityLabel = (priority: string) => {
+    const key = `comparison.analysis.priorities.${priority}` as const;
+    const translated = t(key);
+    return translated === key ? priority : translated;
+  };
 
   useEffect(() => {
     if (!imageLoaded || !canvasRef.current || !imageRef.current) return;
@@ -92,8 +105,8 @@ export function XRayAnnotationViewer({
           <div className="flex items-start gap-2">
             <AlertCircle className="h-4 w-4 text-orange-600 flex-shrink-0 mt-0.5" />
             <p className="text-xs text-orange-900">
-              <strong>Demo Mode:</strong> Overlays show general areas of interest, not precise
-              measurements. Professional diagnostic tools required for clinical use.
+              <strong>{t("analysisViewer.demoWarningTitle")}</strong>{" "}
+              {t("analysisViewer.demoWarningDescription")}
             </p>
           </div>
         </CardContent>
@@ -102,8 +115,8 @@ export function XRayAnnotationViewer({
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            {title}
-            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">Demo</span>
+            {resolvedTitle}
+            <span className="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded">{t("analysisViewer.demoTag")}</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -130,15 +143,15 @@ export function XRayAnnotationViewer({
           <div className="mt-4 flex gap-4 justify-center flex-wrap">
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-yellow-400 rounded"></div>
-              <span className="text-sm">Minimal Change</span>
+              <span className="text-sm">{t("analysisViewer.legend.minimal")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-orange-500 rounded"></div>
-              <span className="text-sm">Moderate Change</span>
+              <span className="text-sm">{t("analysisViewer.legend.moderate")}</span>
             </div>
             <div className="flex items-center gap-2">
               <div className="w-4 h-4 bg-red-500 rounded"></div>
-              <span className="text-sm">Significant Change</span>
+              <span className="text-sm">{t("analysisViewer.legend.significant")}</span>
             </div>
           </div>
         </CardContent>
@@ -147,7 +160,7 @@ export function XRayAnnotationViewer({
       {/* Indicator List */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">Observed Areas</CardTitle>
+          <CardTitle className="text-lg">{t("analysisViewer.observedAreas")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -178,7 +191,7 @@ export function XRayAnnotationViewer({
                         }
                         className="capitalize"
                       >
-                        {indicator.change_level}
+                        {getChangeLevelLabel(indicator.change_level)}
                       </Badge>
                     </div>
                     <p className="text-sm text-gray-600">{indicator.description}</p>
@@ -189,9 +202,9 @@ export function XRayAnnotationViewer({
                       indicator.priority === 'attention' ? 'text-orange-600' :
                       'text-blue-600'
                     }`}>
-                      {indicator.priority}
+                      {getPriorityLabel(indicator.priority)}
                     </div>
-                    <div className="text-xs text-gray-500">priority</div>
+                    <div className="text-xs text-gray-500">{t("analysisViewer.priority")}</div>
                   </div>
                 </div>
               </div>

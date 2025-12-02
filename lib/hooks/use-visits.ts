@@ -12,7 +12,7 @@ const convertDemoVisit = (visit: any) => ({
 });
 
 export function useVisits(patientId: string | null) {
-  const [visits, setVisits] = useState([]);
+  const [visits, setVisits] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 
@@ -47,7 +47,7 @@ export function useVisits(patientId: string | null) {
 }
 
 export function useVisit(id: string | null) {
-  const [visit, setVisit] = useState(null);
+  const [visit, setVisit] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 

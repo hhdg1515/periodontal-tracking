@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Loader2, AlertCircle } from "lucide-react";
 import { useXRaysForComparison, useXRay } from "@/lib/hooks/use-xrays-for-comparison";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface XRayComparisonViewerProps {
   patientId: string | null;
@@ -24,6 +25,7 @@ export function XRayComparisonViewer({
   const { xrays, isLoading, isError } = useXRaysForComparison(patientId);
   const { xray: baselineXRay } = useXRay(baselineId);
   const { xray: currentXRay } = useXRay(currentId);
+  const { t } = useLanguage();
 
   // Calculate time difference between selected X-rays
   const comparisonPeriod = useMemo(() => {
@@ -35,19 +37,35 @@ export function XRayComparisonViewer({
     const diffTime = Math.abs(currentDate.getTime() - baselineDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     const diffMonths = Math.round(diffDays / 30);
-    return diffMonths > 0 ? `${diffMonths} month${diffMonths !== 1 ? 's' : ''}` : `${diffDays} days`;
-  }, [baselineXRay, currentXRay]);
+    if (diffMonths > 0) {
+      return diffMonths === 1
+        ? t("comparison.viewer.periodMonthSingle", { count: diffMonths })
+        : t("comparison.viewer.periodMonthMultiple", { count: diffMonths });
+    }
+    return diffDays === 1
+      ? t("comparison.viewer.periodDaySingle", { count: diffDays })
+      : t("comparison.viewer.periodDayMultiple", { count: diffDays });
+  }, [baselineXRay, currentXRay, t]);
+
+  const getXRayTypeLabel = (type: string) => {
+    const key = `xrays.types.${type}` as const;
+    const translated = t(key);
+    if (translated === key) {
+      return type.replace(/_/g, " ");
+    }
+    return translated;
+  };
 
   if (!patientId) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Select X-Rays to Compare</CardTitle>
+          <CardTitle>{t("comparison.viewer.selectTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-gray-500">
             <AlertCircle className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-            <p className="text-sm">No patient selected. Please select a patient from the dashboard.</p>
+            <p className="text-sm">{t("comparison.viewer.noPatientMessage")}</p>
           </div>
         </CardContent>
       </Card>
@@ -58,12 +76,12 @@ export function XRayComparisonViewer({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Select X-Rays to Compare</CardTitle>
+          <CardTitle>{t("comparison.viewer.selectTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12">
             <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-            <p className="mt-4 text-gray-600">Loading X-rays...</p>
+            <p className="mt-4 text-gray-600">{t("comparison.viewer.loading")}</p>
           </div>
         </CardContent>
       </Card>
@@ -74,12 +92,12 @@ export function XRayComparisonViewer({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Select X-Rays to Compare</CardTitle>
+          <CardTitle>{t("comparison.viewer.selectTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-red-600">
             <AlertCircle className="h-8 w-8 mx-auto mb-2" />
-            <p>Error loading X-rays</p>
+            <p>{t("comparison.viewer.error")}</p>
           </div>
         </CardContent>
       </Card>
@@ -90,13 +108,13 @@ export function XRayComparisonViewer({
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Select X-Rays to Compare</CardTitle>
+          <CardTitle>{t("comparison.viewer.selectTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-12 text-gray-500">
             <AlertCircle className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-            <p className="text-sm">No X-rays available for this patient.</p>
-            <p className="text-xs mt-2">Upload X-rays from a patient visit to begin comparison.</p>
+            <p className="text-sm">{t("comparison.viewer.emptyTitle")}</p>
+            <p className="text-xs mt-2">{t("comparison.viewer.emptyDescription")}</p>
           </div>
         </CardContent>
       </Card>
@@ -108,13 +126,13 @@ export function XRayComparisonViewer({
       {/* Selection Panel */}
       <Card>
         <CardHeader>
-          <CardTitle>Select X-Rays to Compare</CardTitle>
+          <CardTitle>{t("comparison.viewer.selectTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Baseline Selection */}
             <div>
-              <h3 className="font-semibold mb-2 text-sm">Baseline (Earlier)</h3>
+              <h3 className="font-semibold mb-2 text-sm">{t("comparison.viewer.baselineHeading")}</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {xrays.map((xray) => {
                   // @ts-ignore - visit is included in the query
@@ -123,12 +141,9 @@ export function XRayComparisonViewer({
                     <button
                       key={xray.id}
                       onClick={() => onSelectBaseline(xray.id)}
-                      disabled={currentId === xray.id}
                       className={`w-full p-3 border rounded-lg text-left transition-colors ${
                         baselineId === xray.id
                           ? "border-blue-500 bg-blue-50"
-                          : currentId === xray.id
-                          ? "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"
                           : "hover:border-gray-400"
                       }`}
                     >
@@ -139,7 +154,7 @@ export function XRayComparisonViewer({
                             {format(new Date(visitDate), 'MMM dd, yyyy')}
                           </div>
                           <div className="text-xs text-gray-600 capitalize">
-                            {xray.xray_type.replace(/_/g, ' ')}
+                            {getXRayTypeLabel(xray.xray_type)}
                           </div>
                         </div>
                       </div>
@@ -151,7 +166,7 @@ export function XRayComparisonViewer({
 
             {/* Current Selection */}
             <div>
-              <h3 className="font-semibold mb-2 text-sm">Current (Recent)</h3>
+              <h3 className="font-semibold mb-2 text-sm">{t("comparison.viewer.currentHeading")}</h3>
               <div className="space-y-2 max-h-64 overflow-y-auto">
                 {xrays.map((xray) => {
                   // @ts-ignore - visit is included in the query
@@ -160,12 +175,9 @@ export function XRayComparisonViewer({
                     <button
                       key={xray.id}
                       onClick={() => onSelectCurrent(xray.id)}
-                      disabled={baselineId === xray.id}
                       className={`w-full p-3 border rounded-lg text-left transition-colors ${
                         currentId === xray.id
                           ? "border-blue-500 bg-blue-50"
-                          : baselineId === xray.id
-                          ? "border-gray-200 bg-gray-50 opacity-50 cursor-not-allowed"
                           : "hover:border-gray-400"
                       }`}
                     >
@@ -176,7 +188,7 @@ export function XRayComparisonViewer({
                             {format(new Date(visitDate), 'MMM dd, yyyy')}
                           </div>
                           <div className="text-xs text-gray-600 capitalize">
-                            {xray.xray_type.replace(/_/g, ' ')}
+                            {getXRayTypeLabel(xray.xray_type)}
                           </div>
                         </div>
                       </div>
@@ -192,14 +204,14 @@ export function XRayComparisonViewer({
       {/* Side-by-Side Comparison */}
       <Card>
         <CardHeader>
-          <CardTitle>Side-by-Side Comparison</CardTitle>
+          <CardTitle>{t("comparison.viewer.comparisonTitle")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Baseline Image */}
             <div>
               <div className="text-sm font-medium mb-2">
-                Baseline
+                {t("comparison.viewer.baselineLabel")}
                 {baselineXRay && (
                   <>
                     {' - '}
@@ -212,11 +224,11 @@ export function XRayComparisonViewer({
                 {baselineXRay ? (
                   <img
                     src={baselineXRay.image_url}
-                    alt="Baseline X-ray"
+                    alt={`${t("comparison.viewer.baselineLabel")} X-ray`}
                     className="w-full h-full object-contain rounded-lg"
                   />
                 ) : (
-                  <p className="text-gray-400">Select baseline X-ray</p>
+                  <p className="text-gray-400">{t("comparison.viewer.selectBaselinePlaceholder")}</p>
                 )}
               </div>
             </div>
@@ -224,7 +236,7 @@ export function XRayComparisonViewer({
             {/* Current Image */}
             <div>
               <div className="text-sm font-medium mb-2">
-                Current
+                {t("comparison.viewer.currentLabel")}
                 {currentXRay && (
                   <>
                     {' - '}
@@ -237,11 +249,11 @@ export function XRayComparisonViewer({
                 {currentXRay ? (
                   <img
                     src={currentXRay.image_url}
-                    alt="Current X-ray"
+                    alt={`${t("comparison.viewer.currentLabel")} X-ray`}
                     className="w-full h-full object-contain rounded-lg"
                   />
                 ) : (
-                  <p className="text-gray-400">Select current X-ray</p>
+                  <p className="text-gray-400">{t("comparison.viewer.selectCurrentPlaceholder")}</p>
                 )}
               </div>
             </div>
@@ -249,7 +261,8 @@ export function XRayComparisonViewer({
 
           {comparisonPeriod && (
             <div className="mt-4 text-center text-sm text-gray-600">
-              Comparison period: <span className="font-semibold">{comparisonPeriod}</span>
+              {t("comparison.viewer.comparisonPeriodLabel")}{" "}
+              <span className="font-semibold">{comparisonPeriod}</span>
             </div>
           )}
         </CardContent>

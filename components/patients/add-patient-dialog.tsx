@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { DEMO_CLINIC_ID } from "@/lib/hooks/use-patients";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface AddPatientDialogProps {
   open: boolean;
@@ -33,6 +34,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +82,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
       onSuccess?.();
     } catch (err: any) {
       console.error("Error creating patient:", err);
-      setError(err.message || "Failed to create patient. Please try again.");
+      setError(err.message || t("addPatientDialog.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -90,9 +92,9 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add New Patient</DialogTitle>
+          <DialogTitle>{t("addPatientDialog.title")}</DialogTitle>
           <DialogDescription>
-            Enter patient information to create a new record
+            {t("addPatientDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,7 +109,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
             {/* First Name */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="firstName" className="text-right">
-                First Name *
+                {t("addPatientDialog.fields.firstName")}
               </Label>
               <Input
                 id="firstName"
@@ -124,7 +126,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
             {/* Last Name */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="lastName" className="text-right">
-                Last Name *
+                {t("addPatientDialog.fields.lastName")}
               </Label>
               <Input
                 id="lastName"
@@ -141,7 +143,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
             {/* Date of Birth */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="dateOfBirth" className="text-right">
-                Date of Birth *
+                {t("addPatientDialog.fields.dateOfBirth")}
               </Label>
               <Input
                 id="dateOfBirth"
@@ -159,7 +161,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
             {/* Email */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="email" className="text-right">
-                Email
+                {t("addPatientDialog.fields.email")}
               </Label>
               <Input
                 id="email"
@@ -169,7 +171,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
                 onChange={(e) =>
                   setFormData({ ...formData, email: e.target.value })
                 }
-                placeholder="patient@example.com"
+                placeholder={t("addPatientDialog.placeholders.email")}
                 disabled={isSubmitting}
               />
             </div>
@@ -177,7 +179,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
             {/* Phone */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="phone" className="text-right">
-                Phone
+                {t("addPatientDialog.fields.phone")}
               </Label>
               <Input
                 id="phone"
@@ -187,14 +189,14 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
                 onChange={(e) =>
                   setFormData({ ...formData, phone: e.target.value })
                 }
-                placeholder="(123) 456-7890"
+                placeholder={t("addPatientDialog.placeholders.phone")}
                 disabled={isSubmitting}
               />
             </div>
 
             {/* Risk Factors */}
             <div className="grid grid-cols-4 items-start gap-4">
-              <Label className="text-right pt-2">Risk Factors</Label>
+              <Label className="text-right pt-2">{t("addPatientDialog.fields.riskFactors")}</Label>
               <div className="col-span-3 space-y-2">
                 <div className="flex items-center space-x-2">
                   <input
@@ -208,7 +210,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
                     disabled={isSubmitting}
                   />
                   <Label htmlFor="isSmoker" className="font-normal">
-                    Smoker
+                    {t("addPatientDialog.fields.smoker")}
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
@@ -226,7 +228,7 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
                     disabled={isSubmitting}
                   />
                   <Label htmlFor="hasDiabetes" className="font-normal">
-                    Diabetes
+                    {t("addPatientDialog.fields.diabetes")}
                   </Label>
                 </div>
               </div>
@@ -240,11 +242,13 @@ export function AddPatientDialog({ open, onOpenChange, onSuccess }: AddPatientDi
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("common.actions.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isSubmitting ? "Adding..." : "Add Patient"}
+              {isSubmitting
+                ? t("addPatientDialog.buttons.submitting")
+                : t("addPatientDialog.buttons.submit")}
             </Button>
           </DialogFooter>
         </form>

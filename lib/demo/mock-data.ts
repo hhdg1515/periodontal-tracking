@@ -26,7 +26,7 @@ export interface DemoXRay {
   id: string;
   visitId: string;
   imageUrl: string;
-  type: 'baseline' | 'current';
+  type: string; // Anatomical type: 'periapical', 'bitewing_right', 'bitewing_left', etc.
   uploadedAt: Date;
 }
 
@@ -104,51 +104,51 @@ export const DEMO_VISITS: DemoVisit[] = [
   },
 ];
 
-// Sample X-rays (2 per visit for comparison)
+// Sample X-rays (2 per visit for comparison - same anatomical part at different times)
 export const DEMO_XRAYS: DemoXRay[] = [
-  // John Smith X-rays
+  // John Smith X-rays (periapical views from 2 visits)
   {
     id: 'xray-001',
     visitId: 'visit-001',
-    imageUrl: 'https://placehold.co/800x600/1e40af/ffffff?text=John+Smith%0ABaseline',
-    type: 'baseline',
+    imageUrl: 'https://placehold.co/800x600/1e40af/ffffff?text=John+Smith%0AJune+2024%0APeriapical',
+    type: 'periapical',
     uploadedAt: new Date('2024-06-15'),
   },
   {
     id: 'xray-002',
     visitId: 'visit-002',
-    imageUrl: 'https://placehold.co/800x600/dc2626/ffffff?text=John+Smith%0ACurrent',
-    type: 'current',
+    imageUrl: 'https://placehold.co/800x600/dc2626/ffffff?text=John+Smith%0ANov+2024%0APeriapical',
+    type: 'periapical',
     uploadedAt: new Date('2024-11-15'),
   },
-  // Emily Davis X-rays
+  // Emily Davis X-rays (bitewing_right views from 2 visits)
   {
     id: 'xray-003',
     visitId: 'visit-003',
-    imageUrl: 'https://placehold.co/800x600/059669/ffffff?text=Emily+Davis%0ABaseline',
-    type: 'baseline',
+    imageUrl: 'https://placehold.co/800x600/059669/ffffff?text=Emily+Davis%0AMay+2024%0ABitewing+Right',
+    type: 'bitewing_right',
     uploadedAt: new Date('2024-05-20'),
   },
   {
     id: 'xray-004',
     visitId: 'visit-004',
-    imageUrl: 'https://placehold.co/800x600/7c3aed/ffffff?text=Emily+Davis%0ACurrent',
-    type: 'current',
+    imageUrl: 'https://placehold.co/800x600/7c3aed/ffffff?text=Emily+Davis%0AOct+2024%0ABitewing+Right',
+    type: 'bitewing_right',
     uploadedAt: new Date('2024-10-20'),
   },
-  // Michael Wilson X-rays
+  // Michael Wilson X-rays (bitewing_left views from 2 visits)
   {
     id: 'xray-005',
     visitId: 'visit-005',
-    imageUrl: 'https://placehold.co/800x600/f59e0b/ffffff?text=Michael+Wilson%0ABaseline',
-    type: 'baseline',
+    imageUrl: 'https://placehold.co/800x600/f59e0b/ffffff?text=Michael+Wilson%0AJuly+2024%0ABitewing+Left',
+    type: 'bitewing_left',
     uploadedAt: new Date('2024-07-10'),
   },
   {
     id: 'xray-006',
     visitId: 'visit-006',
-    imageUrl: 'https://placehold.co/800x600/06b6d4/ffffff?text=Michael+Wilson%0ACurrent',
-    type: 'current',
+    imageUrl: 'https://placehold.co/800x600/06b6d4/ffffff?text=Michael+Wilson%0ADec+2024%0ABitewing+Left',
+    type: 'bitewing_left',
     uploadedAt: new Date('2024-12-10'),
   },
 ];

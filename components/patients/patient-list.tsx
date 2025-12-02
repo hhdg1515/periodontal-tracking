@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Calendar, AlertCircle, Loader2 } from "lucide-react";
 import { usePatients } from "@/lib/hooks/use-patients";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface PatientListProps {
   searchQuery: string;
@@ -13,6 +14,7 @@ interface PatientListProps {
 
 export function PatientList({ searchQuery }: PatientListProps) {
   const { patients, isLoading, isError } = usePatients();
+  const { t } = useLanguage();
 
   const filteredPatients = patients.filter((patient) => {
     if (!searchQuery) return true;
@@ -28,7 +30,7 @@ export function PatientList({ searchQuery }: PatientListProps) {
     return (
       <Card className="p-12 text-center">
         <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="mt-4 text-gray-600">Loading patients...</p>
+        <p className="mt-4 text-gray-600">{t("patientList.loading")}</p>
       </Card>
     );
   }
@@ -37,9 +39,9 @@ export function PatientList({ searchQuery }: PatientListProps) {
     return (
       <Card className="p-12 text-center">
         <AlertCircle className="h-8 w-8 mx-auto text-red-600" />
-        <p className="mt-4 text-red-600 font-semibold">Error loading patients</p>
+        <p className="mt-4 text-red-600 font-semibold">{t("patientList.errorTitle")}</p>
         <p className="mt-2 text-sm text-gray-600">
-          Please check your Supabase configuration in .env.local
+          {t("patientList.errorDescription")}
         </p>
       </Card>
     );
@@ -51,9 +53,9 @@ export function PatientList({ searchQuery }: PatientListProps) {
         <div className="mx-auto w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">
           <AlertCircle className="h-8 w-8 text-gray-400" />
         </div>
-        <h3 className="text-lg font-semibold mb-2">No patients yet</h3>
+        <h3 className="text-lg font-semibold mb-2">{t("patientList.emptyTitle")}</h3>
         <p className="text-gray-600 mb-4">
-          Click the &quot;Add Patient&quot; button to get started
+          {t("patientList.emptyDescription")}
         </p>
       </Card>
     );
@@ -62,8 +64,8 @@ export function PatientList({ searchQuery }: PatientListProps) {
   if (filteredPatients.length === 0) {
     return (
       <Card className="p-12 text-center">
-        <h3 className="text-lg font-semibold mb-2">No patients found</h3>
-        <p className="text-gray-600">Try adjusting your search query</p>
+        <h3 className="text-lg font-semibold mb-2">{t("patientList.noResultsTitle")}</h3>
+        <p className="text-gray-600">{t("patientList.noResultsDescription")}</p>
       </Card>
     );
   }
@@ -86,8 +88,8 @@ export function PatientList({ searchQuery }: PatientListProps) {
                     {patient.first_name} {patient.last_name}
                   </h3>
                   <div className="flex items-center gap-4 text-sm text-gray-600">
-                    <span>ID: {patient.patient_id}</span>
-                    <span>DOB: {format(new Date(patient.date_of_birth), 'MMM dd, yyyy')}</span>
+                    <span>{t("patientList.idLabel")}: {patient.patient_id}</span>
+                    <span>{t("patientList.dobLabel")}: {format(new Date(patient.date_of_birth), 'MMM dd, yyyy')}</span>
                   </div>
                 </div>
               </div>
@@ -97,7 +99,7 @@ export function PatientList({ searchQuery }: PatientListProps) {
               <Link href={`/dashboard/patients/${patient.id}`}>
                 <Button variant="outline" size="sm">
                   <Eye className="h-4 w-4 mr-2" />
-                  View Details
+                  {t("common.actions.viewDetails")}
                 </Button>
               </Link>
             </div>

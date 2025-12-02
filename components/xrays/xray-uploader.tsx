@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, X, CheckCircle, Loader2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface XRayUploaderProps {
   visitId: string;
@@ -21,6 +22,7 @@ interface UploadedFile {
 export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const { t } = useLanguage();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const newFiles = acceptedFiles.map((file) => ({
@@ -126,14 +128,14 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
         <input {...getInputProps()} />
         <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
         {isDragActive ? (
-          <p className="text-blue-600 font-medium">Drop the files here...</p>
+          <p className="text-blue-600 font-medium">{t("xrays.uploader.dropActive")}</p>
         ) : (
           <>
             <p className="text-gray-700 font-medium mb-2">
-              Drag and drop X-ray images here
+              {t("xrays.uploader.dropTitle")}
             </p>
             <p className="text-sm text-gray-500">
-              or click to select files (PNG, JPG, JPEG, DICOM - max 50MB)
+              {t("xrays.uploader.dropSubtitle")}
             </p>
           </>
         )}
@@ -142,7 +144,7 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
       {/* File List */}
       {files.length > 0 && (
         <div className="mt-6 space-y-4">
-          <h3 className="font-semibold">Files to Upload ({files.length})</h3>
+          <h3 className="font-semibold">{t("xrays.uploader.filesTitle", { count: files.length })}</h3>
           <div className="grid gap-4">
             {files.map((uploadedFile, index) => (
               <div
@@ -168,12 +170,13 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
                     value={uploadedFile.type}
                     onChange={(e) => updateFileType(uploadedFile, e.target.value)}
                     className="mt-2 text-sm border rounded px-2 py-1"
+                    aria-label={t("xrays.uploader.typeLabel")}
                     disabled={uploadedFile.status !== "pending"}
                   >
-                    <option value="bitewing_right">Bitewing Right</option>
-                    <option value="bitewing_left">Bitewing Left</option>
-                    <option value="periapical">Periapical</option>
-                    <option value="panoramic">Panoramic</option>
+                    <option value="bitewing_right">{t("xrays.types.bitewing_right")}</option>
+                    <option value="bitewing_left">{t("xrays.types.bitewing_left")}</option>
+                    <option value="periapical">{t("xrays.types.periapical")}</option>
+                    <option value="panoramic">{t("xrays.types.panoramic")}</option>
                   </select>
 
                   {uploadedFile.status === "error" && uploadedFile.errorMessage && (
@@ -186,7 +189,7 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
                 {/* Status */}
                 <div className="flex items-center gap-2">
                   {uploadedFile.status === "pending" && (
-                    <span className="text-sm text-gray-500">Ready</span>
+                    <span className="text-sm text-gray-500">{t("xrays.uploader.ready")}</span>
                   )}
                   {uploadedFile.status === "uploading" && (
                     <Loader2 className="h-5 w-5 animate-spin text-blue-600" />
@@ -221,10 +224,10 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Uploading...
+                  {t("xrays.uploader.uploading")}
                 </>
               ) : (
-                "Upload X-Rays"
+                t("xrays.uploader.uploadButton")
               )}
             </Button>
             {hasErrors && (
@@ -232,7 +235,7 @@ export function XRayUploader({ visitId, onUploadComplete }: XRayUploaderProps) {
                 variant="outline"
                 onClick={() => setFiles(files.filter((f) => f.status !== "success"))}
               >
-                Clear Successful
+                {t("xrays.uploader.clearSuccessful")}
               </Button>
             )}
           </div>

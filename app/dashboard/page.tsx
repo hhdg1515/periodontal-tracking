@@ -3,20 +3,22 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, FileText, TrendingUp, AlertCircle, Loader2 } from "lucide-react";
 import { useDashboardStats } from "@/lib/hooks/use-dashboard-stats";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function DashboardPage() {
   const { stats, isLoading, isError } = useDashboardStats();
+  const { t } = useLanguage();
 
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 mb-8">Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-900 mb-8">{t("dashboard.title")}</h1>
 
       {/* Stats Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {/* Total Patients */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Patients</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.stats.totalPatients.title")}</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -28,7 +30,9 @@ export default function DashboardPage() {
               <>
                 <div className="text-2xl font-bold">{stats?.totalPatients || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats?.totalPatients === 0 ? 'No patients yet' : 'Active patients'}
+                  {stats?.totalPatients === 0
+                    ? t("dashboard.stats.totalPatients.zero")
+                    : t("dashboard.stats.totalPatients.description")}
                 </p>
               </>
             )}
@@ -38,7 +42,7 @@ export default function DashboardPage() {
         {/* Analyses This Month */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Analyses This Month</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.stats.analyses.title")}</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -50,7 +54,9 @@ export default function DashboardPage() {
               <>
                 <div className="text-2xl font-bold">{stats?.analysesThisMonth || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats?.analysesThisMonth === 0 ? 'No analyses yet' : 'Comparisons completed'}
+                  {stats?.analysesThisMonth === 0
+                    ? t("dashboard.stats.analyses.zero")
+                    : t("dashboard.stats.analyses.description")}
                 </p>
               </>
             )}
@@ -60,7 +66,7 @@ export default function DashboardPage() {
         {/* Treatment Acceptance */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Treatment Acceptance</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.stats.acceptance.title")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -72,13 +78,13 @@ export default function DashboardPage() {
               <>
                 <div className="text-2xl font-bold">
                   {stats?.treatmentAcceptanceRate !== null
-                    ? `${stats.treatmentAcceptanceRate}%`
+                    ? `${stats?.treatmentAcceptanceRate}%`
                     : '--'}
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {stats?.treatmentAcceptanceRate !== null
-                    ? 'Acceptance rate'
-                    : 'Not enough data'}
+                    ? t("dashboard.stats.acceptance.description")
+                    : t("dashboard.stats.acceptance.noData")}
                 </p>
               </>
             )}
@@ -88,7 +94,7 @@ export default function DashboardPage() {
         {/* Pending Reviews */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Reviews</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("dashboard.stats.reviews.title")}</CardTitle>
             <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -100,7 +106,9 @@ export default function DashboardPage() {
               <>
                 <div className="text-2xl font-bold">{stats?.pendingReviews || 0}</div>
                 <p className="text-xs text-muted-foreground">
-                  {stats?.pendingReviews === 0 ? 'All clear' : 'X-rays awaiting analysis'}
+                  {stats?.pendingReviews === 0
+                    ? t("dashboard.stats.reviews.zero")
+                    : t("dashboard.stats.reviews.description")}
                 </p>
               </>
             )}
@@ -111,7 +119,7 @@ export default function DashboardPage() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Start</CardTitle>
+          <CardTitle>{t("dashboard.quickStart.title")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -120,9 +128,9 @@ export default function DashboardPage() {
                 1
               </div>
               <div>
-                <h3 className="font-semibold">Add Your First Patient</h3>
+                <h3 className="font-semibold">{t("dashboard.quickStart.steps.addPatient.title")}</h3>
                 <p className="text-sm text-gray-600">
-                  Start by adding a patient with periodontal disease history
+                  {t("dashboard.quickStart.steps.addPatient.description")}
                 </p>
               </div>
             </div>
@@ -132,9 +140,9 @@ export default function DashboardPage() {
                 2
               </div>
               <div>
-                <h3 className="font-semibold text-gray-400">Upload X-rays</h3>
+                <h3 className="font-semibold text-gray-400">{t("dashboard.quickStart.steps.uploadXrays.title")}</h3>
                 <p className="text-sm text-gray-400">
-                  Upload historical and current X-rays for comparison
+                  {t("dashboard.quickStart.steps.uploadXrays.description")}
                 </p>
               </div>
             </div>
@@ -144,9 +152,9 @@ export default function DashboardPage() {
                 3
               </div>
               <div>
-                <h3 className="font-semibold text-gray-400">Generate Analysis</h3>
+                <h3 className="font-semibold text-gray-400">{t("dashboard.quickStart.steps.runAnalysis.title")}</h3>
                 <p className="text-sm text-gray-400">
-                  Let AI analyze bone loss and generate patient reports
+                  {t("dashboard.quickStart.steps.runAnalysis.description")}
                 </p>
               </div>
             </div>

@@ -6,7 +6,7 @@ const convertDemoXRay = (xray: any) => ({
   id: xray.id,
   visit_id: xray.visitId,
   image_url: xray.imageUrl,
-  xray_type: xray.type === 'baseline' ? 'periapical' : 'bitewing_right',
+  xray_type: xray.type, // Use actual anatomical type from demo data
   analysis_status: 'analyzed',
   uploaded_at: xray.uploadedAt.toISOString(),
   created_at: xray.uploadedAt.toISOString(),
@@ -48,7 +48,7 @@ export function useXRays(visitId: string | null) {
 }
 
 export function useXRay(id: string | null) {
-  const [xray, setXRay] = useState(null);
+  const [xray, setXRay] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(false);
 

@@ -14,6 +14,7 @@ import { ClinicalGuidelinesPanel } from "@/components/clinical/clinical-guidelin
 import { useVisit } from "@/lib/hooks/use-visits";
 import { useClinicalAssessment } from "@/lib/hooks/use-clinical-assessment";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function VisitDetailPage() {
   const params = useParams();
@@ -23,13 +24,14 @@ export default function VisitDetailPage() {
   const { visit, isLoading, isError, mutate } = useVisit(visitId);
   const { assessment, mutate: mutateAssessment } = useClinicalAssessment(visitId);
   const [activeTab, setActiveTab] = useState<string>("clinical");
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-          <p className="mt-4 text-gray-600">Loading visit...</p>
+          <p className="mt-4 text-gray-600">{t("visitDetail.loading")}</p>
         </div>
       </div>
     );
@@ -40,14 +42,14 @@ export default function VisitDetailPage() {
       <div className="flex items-center justify-center min-h-[400px]">
         <Card className="p-8 text-center max-w-md">
           <AlertCircle className="h-12 w-12 mx-auto text-red-600 mb-4" />
-          <h2 className="text-xl font-semibold mb-2">Visit Not Found</h2>
+          <h2 className="text-xl font-semibold mb-2">{t("visitDetail.notFoundTitle")}</h2>
           <p className="text-gray-600 mb-4">
-            The visit you&apos;re looking for doesn&apos;t exist.
+            {t("visitDetail.notFoundDescription")}
           </p>
           <Link href={`/dashboard/patients/${patientId}`}>
             <Button>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Patient
+              {t("visitDetail.backButton")}
             </Button>
           </Link>
         </Card>
@@ -61,7 +63,7 @@ export default function VisitDetailPage() {
       <Link href={`/dashboard/patients/${patientId}`}>
         <Button variant="ghost" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Patient
+          {t("visitDetail.backButton")}
         </Button>
       </Link>
 
@@ -70,20 +72,20 @@ export default function VisitDetailPage() {
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>
-              <CardTitle className="text-2xl">Visit Details</CardTitle>
+              <CardTitle className="text-2xl">{t("visitDetail.cardTitle")}</CardTitle>
               <p className="text-gray-600 mt-1">
                 {format(new Date(visit.visit_date), 'MMMM dd, yyyy')}
               </p>
             </div>
             <span className="px-3 py-1 bg-blue-50 text-blue-700 rounded capitalize">
-              {visit.visit_type.replace('_', ' ')}
+              {t(`visitList.visitTypes.${visit.visit_type}` as const)}
             </span>
           </div>
         </CardHeader>
         <CardContent>
           {visit.notes && (
             <div>
-              <h3 className="font-semibold mb-2">Notes</h3>
+              <h3 className="font-semibold mb-2">{t("visitDetail.notes")}</h3>
               <p className="text-gray-700">{visit.notes}</p>
             </div>
           )}
@@ -95,11 +97,11 @@ export default function VisitDetailPage() {
         <TabsList className="grid w-full max-w-md grid-cols-2">
           <TabsTrigger value="clinical" className="flex items-center gap-2">
             <Stethoscope className="h-4 w-4" />
-            Clinical Assessment
+            {t("visitDetail.tabs.clinical")}
           </TabsTrigger>
           <TabsTrigger value="xrays" className="flex items-center gap-2">
             <Image className="h-4 w-4" />
-            X-Rays
+            {t("visitDetail.tabs.xrays")}
           </TabsTrigger>
         </TabsList>
 
@@ -111,7 +113,7 @@ export default function VisitDetailPage() {
               <ClinicalAssessmentForm
                 visitId={visitId}
                 existingAssessment={assessment}
-                onSave={() => mutateAssessment()}
+                onSaveSuccess={() => mutateAssessment()}
               />
             </div>
 
@@ -129,7 +131,7 @@ export default function VisitDetailPage() {
             <CardHeader>
               <CardTitle>
                 <Upload className="inline h-5 w-5 mr-2" />
-                Upload X-Rays
+                {t("visitDetail.xrays.uploadTitle")}
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -140,7 +142,7 @@ export default function VisitDetailPage() {
           {/* X-Ray Gallery */}
           <Card>
             <CardHeader>
-              <CardTitle>Uploaded X-Rays</CardTitle>
+              <CardTitle>{t("visitDetail.xrays.uploadedTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <XRayGallery visitId={visitId} patientId={patientId} />

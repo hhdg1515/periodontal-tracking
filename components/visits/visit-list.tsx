@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Eye, Upload, FileText, Loader2, AlertCircle } from "lucide-react";
 import { useVisits } from "@/lib/hooks/use-visits";
 import { format } from "date-fns";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface VisitListProps {
   patientId: string;
@@ -13,12 +14,13 @@ interface VisitListProps {
 
 export function VisitList({ patientId }: VisitListProps) {
   const { visits, isLoading, isError } = useVisits(patientId);
+  const { t } = useLanguage();
 
   if (isLoading) {
     return (
       <div className="text-center py-12">
         <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600" />
-        <p className="mt-4 text-gray-600">Loading visits...</p>
+        <p className="mt-4 text-gray-600">{t("visitList.loading")}</p>
       </div>
     );
   }
@@ -27,7 +29,7 @@ export function VisitList({ patientId }: VisitListProps) {
     return (
       <div className="text-center py-12">
         <AlertCircle className="h-8 w-8 mx-auto text-red-600 mb-2" />
-        <p className="text-red-600">Error loading visits</p>
+        <p className="text-red-600">{t("visitList.error")}</p>
       </div>
     );
   }
@@ -35,8 +37,8 @@ export function VisitList({ patientId }: VisitListProps) {
   if (!visits || visits.length === 0) {
     return (
       <div className="text-center py-12 text-gray-600">
-        <p>No visits recorded yet</p>
-        <p className="text-sm mt-2">Click &quot;Add Visit&quot; to get started</p>
+        <p>{t("visitList.emptyTitle")}</p>
+        <p className="text-sm mt-2">{t("visitList.emptyDescription")}</p>
       </div>
     );
   }
@@ -57,17 +59,17 @@ export function VisitList({ patientId }: VisitListProps) {
                     {format(new Date(visit.visit_date), 'MMM dd, yyyy')}
                   </h4>
                   <span className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded capitalize">
-                    {visit.visit_type.replace('_', ' ')}
+                    {t(`visitList.visitTypes.${visit.visit_type}` as const)}
                   </span>
                 </div>
                 <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
                   <span className="flex items-center gap-1">
                     <Upload className="h-3 w-3" />
-                    {xrayCount} X-ray{xrayCount !== 1 ? 's' : ''}
+                    {t("visitList.xrayLabel")}: {xrayCount}
                   </span>
                   <span className="flex items-center gap-1">
                     <FileText className="h-3 w-3" />
-                    {analysisCount} Analysis
+                    {t("visitList.analysisLabel")}: {analysisCount}
                   </span>
                 </div>
                 {visit.notes && (
@@ -79,7 +81,7 @@ export function VisitList({ patientId }: VisitListProps) {
               <Link href={`/dashboard/patients/${patientId}/visits/${visit.id}`}>
                 <Button variant="outline" size="sm">
                   <Eye className="h-4 w-4 mr-2" />
-                  View Details
+                  {t("common.actions.viewDetails")}
                 </Button>
               </Link>
             </div>

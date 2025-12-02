@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Activity, Users, FolderOpen, BarChart3, Settings, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function DashboardLayout({
   children,
@@ -13,6 +14,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [isAddPatientOpen, setIsAddPatientOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -40,7 +42,7 @@ export default function DashboardLayout({
         <div className="px-4 py-3 flex justify-between items-center">
           <Link href="/dashboard" className="flex items-center space-x-2">
             <Activity className="h-6 w-6 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900">PerioTrack AI</span>
+            <span className="text-xl font-bold text-gray-900">{t("common.appName")}</span>
           </Link>
           <div className="flex items-center gap-4">
             <Button
@@ -49,9 +51,9 @@ export default function DashboardLayout({
               className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Add Patient
+              {t("common.actions.addPatient")}
             </Button>
-            <span className="text-sm text-gray-600">Demo Clinic</span>
+            <span className="text-sm text-gray-600">{t("common.clinicDemoName")}</span>
             <div className="h-8 w-8 rounded-full bg-blue-100 flex items-center justify-center">
               <span className="text-sm font-medium text-blue-600">DC</span>
             </div>
@@ -68,28 +70,28 @@ export default function DashboardLayout({
               className={getNavLinkClass("/dashboard")}
             >
               <BarChart3 className="h-5 w-5" />
-              <span>Dashboard</span>
+              <span>{t("layout.nav.dashboard")}</span>
             </Link>
             <Link
               href="/dashboard/patients"
               className={getNavLinkClass("/dashboard/patients")}
             >
               <Users className="h-5 w-5" />
-              <span>Patients</span>
+              <span>{t("layout.nav.patients")}</span>
             </Link>
             <Link
               href="/dashboard/analyses"
               className={getNavLinkClass("/dashboard/analyses")}
             >
               <FolderOpen className="h-5 w-5" />
-              <span>Analyses</span>
+              <span>{t("layout.nav.analyses")}</span>
             </Link>
             <Link
               href="/dashboard/settings"
               className={getNavLinkClass("/dashboard/settings")}
             >
               <Settings className="h-5 w-5" />
-              <span>Settings</span>
+              <span>{t("layout.nav.settings")}</span>
             </Link>
           </nav>
         </aside>

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface AddVisitDialogProps {
   patientId: string;
@@ -34,6 +35,7 @@ export function AddVisitDialog({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useLanguage();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,7 +67,7 @@ export function AddVisitDialog({
       onSuccess?.();
     } catch (err: any) {
       console.error("Error creating visit:", err);
-      setError(err.message || "Failed to create visit. Please try again.");
+      setError(err.message || t("addVisitDialog.error"));
     } finally {
       setIsSubmitting(false);
     }
@@ -75,9 +77,9 @@ export function AddVisitDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Visit</DialogTitle>
+          <DialogTitle>{t("addVisitDialog.title")}</DialogTitle>
           <DialogDescription>
-            Record a new patient visit and upload X-rays
+            {t("addVisitDialog.description")}
           </DialogDescription>
         </DialogHeader>
 
@@ -92,7 +94,7 @@ export function AddVisitDialog({
             {/* Visit Date */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="visitDate" className="text-right">
-                Visit Date *
+                {t("addVisitDialog.fields.visitDate")}
               </Label>
               <Input
                 id="visitDate"
@@ -110,7 +112,7 @@ export function AddVisitDialog({
             {/* Visit Type */}
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="visitType" className="text-right">
-                Visit Type *
+                {t("addVisitDialog.fields.visitType")}
               </Label>
               <select
                 id="visitType"
@@ -122,16 +124,16 @@ export function AddVisitDialog({
                 required
                 disabled={isSubmitting}
               >
-                <option value="initial">Initial</option>
-                <option value="followup">Follow-up</option>
-                <option value="post_treatment">Post-Treatment</option>
+                <option value="initial">{t("visitList.visitTypes.initial")}</option>
+                <option value="followup">{t("visitList.visitTypes.followup")}</option>
+                <option value="post_treatment">{t("visitList.visitTypes.post_treatment")}</option>
               </select>
             </div>
 
             {/* Notes */}
             <div className="grid grid-cols-4 items-start gap-4">
               <Label htmlFor="notes" className="text-right pt-2">
-                Notes
+                {t("addVisitDialog.fields.notes")}
               </Label>
               <textarea
                 id="notes"
@@ -140,7 +142,7 @@ export function AddVisitDialog({
                 onChange={(e) =>
                   setFormData({ ...formData, notes: e.target.value })
                 }
-                placeholder="Any additional notes about this visit..."
+                placeholder={t("addVisitDialog.placeholders.notes")}
                 disabled={isSubmitting}
               />
             </div>
@@ -153,11 +155,13 @@ export function AddVisitDialog({
               onClick={() => onOpenChange(false)}
               disabled={isSubmitting}
             >
-              Cancel
+              {t("common.actions.cancel")}
             </Button>
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isSubmitting ? "Adding..." : "Add Visit"}
+              {isSubmitting
+                ? t("addVisitDialog.buttons.submitting")
+                : t("addVisitDialog.buttons.submit")}
             </Button>
           </DialogFooter>
         </form>

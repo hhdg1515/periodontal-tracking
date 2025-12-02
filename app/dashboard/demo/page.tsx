@@ -1,20 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XRayAnnotationViewer } from "@/components/analysis/xray-annotation-viewer";
 import { analyzeXRayComparison } from "@/lib/ai/analysis-service";
 import { generateDoctorReport, generatePatientReport, downloadPDF } from "@/lib/reports/pdf-generator";
 import { DEMO_PATIENTS, getDemoPatientWithXRays } from "@/lib/demo/mock-data";
-import { FileText, Download, Loader2, ChevronDown } from "lucide-react";
+import { FileText, Download, Loader2 } from "lucide-react";
 import type { AnalysisResult } from "@/lib/ai/analysis-service";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function DemoPage() {
   const [selectedPatientId, setSelectedPatientId] = useState(DEMO_PATIENTS[0].id);
   const [analysis, setAnalysis] = useState<AnalysisResult | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isGeneratingReport, setIsGeneratingReport] = useState(false);
+  const { t, language } = useLanguage();
 
   // Get selected patient data with X-rays
   const patientData = getDemoPatientWithXRays(selectedPatientId);
@@ -26,11 +28,11 @@ export default function DemoPage() {
   const handleAnalyze = async () => {
     setIsAnalyzing(true);
     try {
-      const result = await analyzeXRayComparison(demoBaselineImage, demoCurrentImage);
+      const result = await analyzeXRayComparison(demoBaselineImage, demoCurrentImage, language);
       setAnalysis(result);
     } catch (error) {
       console.error("Analysis failed:", error);
-      alert("Analysis failed. Please try again.");
+      alert(t("demo.errors.analysisFailed"));
     } finally {
       setIsAnalyzing(false);
     }
@@ -54,8 +56,8 @@ export default function DemoPage() {
         analysis,
         baselineDate: baselineDate instanceof Date ? baselineDate.toISOString().split('T')[0] : baselineDate,
         currentDate: currentDate instanceof Date ? currentDate.toISOString().split('T')[0] : currentDate,
-        clinicName: "Periodontal Tracking Clinic",
-        doctorName: "Dr. Analysis System",
+        clinicName: t("demo.reportMeta.clinicName"),
+        doctorName: t("demo.reportMeta.doctorName"),
       };
 
       const pdf = type === "doctor"
@@ -65,20 +67,29 @@ export default function DemoPage() {
       downloadPDF(pdf, `${type}-report-${patientData.patient.id}.pdf`);
     } catch (error) {
       console.error("Report generation failed:", error);
-      alert("Failed to generate report. Please try again.");
+      alert(t("demo.errors.reportFailed"));
     } finally {
       setIsGeneratingReport(false);
     }
   };
 
+  const patientStatus =
+    patientData && patientData.patient.isSmoker ? t("demo.smoker") : t("demo.nonSmoker");
+
+  useEffect(() => {
+    if (analysis?.is_demo_data) {
+      setAnalysis(null);
+    }
+  }, [language]);
+
   return (
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          AI X-Ray Analysis Demo
+          {t("demo.title")}
         </h1>
         <p className="text-gray-600 mb-6">
-          Select a sample patient and click "Run AI Analysis" to see how our AI system detects and analyzes periodontal changes between baseline and current X-rays.
+          {t("demo.description")}
         </p>
 
         {/* Patient Selector */}
@@ -86,7 +97,7 @@ export default function DemoPage() {
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-gray-700">
-                Select Sample Patient:
+                {t("demo.selectLabel")}
               </label>
               <select
                 value={selectedPatientId}
@@ -104,7 +115,10 @@ export default function DemoPage() {
               </select>
               {patientData && (
                 <div className="text-sm text-gray-600 ml-4">
-                  DOB: {patientData.patient.dateOfBirth} • {patientData.patient.isSmoker ? 'Smoker' : 'Non-smoker'}
+                  {t("demo.patientDetails", {
+                    dob: patientData.patient.dateOfBirth,
+                    status: patientStatus,
+                  })}
                 </div>
               )}
             </div>
@@ -117,11 +131,12 @@ export default function DemoPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              Baseline X-Ray
+              {t("demo.baselineTitle")}
             </CardTitle>
             {patientData?.baselineXRay && (
               <p className="text-sm text-gray-600 mt-2">
-                Taken: {patientData.baselineXRay.uploadedAt instanceof Date
+                {t("demo.takenLabel")}{" "}
+                {patientData.baselineXRay.uploadedAt instanceof Date
                   ? patientData.baselineXRay.uploadedAt.toLocaleDateString()
                   : String(patientData.baselineXRay.uploadedAt)}
               </p>
@@ -130,7 +145,7 @@ export default function DemoPage() {
           <CardContent>
             <img
               src={demoBaselineImage}
-              alt="Baseline X-ray"
+              alt={t("demo.baselineTitle")}
               className="w-full h-64 object-cover rounded border bg-gray-100"
             />
           </CardContent>
@@ -139,11 +154,12 @@ export default function DemoPage() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg">
-              Current X-Ray
+              {t("demo.currentTitle")}
             </CardTitle>
             {patientData?.currentXRay && (
               <p className="text-sm text-gray-600 mt-2">
-                Taken: {patientData.currentXRay.uploadedAt instanceof Date
+                {t("demo.takenLabel")}{" "}
+                {patientData.currentXRay.uploadedAt instanceof Date
                   ? patientData.currentXRay.uploadedAt.toLocaleDateString()
                   : String(patientData.currentXRay.uploadedAt)}
               </p>
@@ -152,7 +168,7 @@ export default function DemoPage() {
           <CardContent>
             <img
               src={demoCurrentImage}
-              alt="Current X-ray"
+              alt={t("demo.currentTitle")}
               className="w-full h-64 object-cover rounded border bg-gray-100"
             />
           </CardContent>
@@ -172,17 +188,17 @@ export default function DemoPage() {
               {isAnalyzing ? (
                 <>
                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                  Analyzing...
+                  {t("demo.analyzing")}
                 </>
               ) : (
                 <>
                   <FileText className="h-5 w-5 mr-2" />
-                  Run AI Analysis
+                  {t("demo.analyzeButton")}
                 </>
               )}
             </Button>
             <p className="text-sm text-gray-500 mt-2">
-              Click to analyze X-rays using AI bone loss detection
+              {t("demo.analyzeHint")}
             </p>
           </div>
         </CardContent>
@@ -194,32 +210,32 @@ export default function DemoPage() {
           {/* Overall Assessment */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>AI Analysis Results</CardTitle>
+              <CardTitle>{t("demo.resultsTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Overall Summary</h3>
+                  <h3 className="font-semibold mb-2">{t("demo.overallSummary")}</h3>
                   <p className="text-gray-700">{analysis.overall_summary}</p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-4 rounded">
-                    <div className="text-sm text-gray-600">Health Score</div>
+                    <div className="text-sm text-gray-600">{t("demo.healthScore")}</div>
                     <div className="text-2xl font-bold text-blue-600">
                       {analysis.health_score.toFixed(1)}/10
                     </div>
                   </div>
 
                   <div className="bg-orange-50 p-4 rounded">
-                    <div className="text-sm text-gray-600">Concern Level</div>
+                    <div className="text-sm text-gray-600">{t("demo.concernLevel")}</div>
                     <div className="text-2xl font-bold text-orange-600 uppercase">
                       {analysis.concern_level}
                     </div>
                   </div>
 
                   <div className="bg-green-50 p-4 rounded">
-                    <div className="text-sm text-gray-600">Areas Detected</div>
+                    <div className="text-sm text-gray-600">{t("demo.areasDetected")}</div>
                     <div className="text-2xl font-bold text-green-600">
                       {analysis.indicators.length}
                     </div>
@@ -227,7 +243,7 @@ export default function DemoPage() {
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Discussion Points</h3>
+                  <h3 className="font-semibold mb-2">{t("demo.discussionPoints")}</h3>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
                     {analysis.discussion_points.map((point, idx) => (
                       <li key={idx}>{point}</li>
@@ -242,13 +258,13 @@ export default function DemoPage() {
           {analysis.indicators && analysis.indicators.length > 0 && (
             <Card className="mb-6">
               <CardHeader>
-                <CardTitle>Visual Change Analysis</CardTitle>
+                <CardTitle>{t("demo.visualAnalysisTitle")}</CardTitle>
               </CardHeader>
               <CardContent>
                 <XRayAnnotationViewer
                   imageUrl={demoCurrentImage}
                   indicators={analysis.indicators}
-                  title="Current X-Ray with AI Indicators"
+                  title={t("demo.viewerTitle")}
                 />
               </CardContent>
             </Card>
@@ -257,7 +273,7 @@ export default function DemoPage() {
           {/* PDF Reports */}
           <Card>
             <CardHeader>
-              <CardTitle>Generate PDF Reports</CardTitle>
+              <CardTitle>{t("demo.pdfTitle")}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex gap-4">
@@ -267,7 +283,7 @@ export default function DemoPage() {
                   variant="outline"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Doctor Report
+                  {t("demo.doctorReport")}
                 </Button>
                 <Button
                   onClick={() => handleGenerateReport("patient")}
@@ -275,11 +291,11 @@ export default function DemoPage() {
                   variant="outline"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Patient Report
+                  {t("demo.patientReport")}
                 </Button>
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                Download professional PDF reports with analysis results
+                {t("demo.pdfDescription")}
               </p>
             </CardContent>
           </Card>

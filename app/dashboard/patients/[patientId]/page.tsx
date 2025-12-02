@@ -10,11 +10,13 @@ import { VisitList } from "@/components/visits/visit-list";
 import { AddVisitDialog } from "@/components/visits/add-visit-dialog";
 import { usePatient } from "@/lib/hooks/use-patients";
 import { useVisits } from "@/lib/hooks/use-visits";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 export default function PatientDetailPage() {
   const params = useParams();
   const patientId = params.patientId as string;
   const [isAddVisitOpen, setIsAddVisitOpen] = useState(false);
+  const { t } = useLanguage();
 
   // Fetch patient data
   const { patient: patientData } = usePatient(patientId);
@@ -39,7 +41,7 @@ export default function PatientDetailPage() {
       <Link href="/dashboard/patients">
         <Button variant="ghost" className="mb-4">
           <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Patients
+          {t("common.actions.backToPatients")}
         </Button>
       </Link>
 
@@ -51,32 +53,32 @@ export default function PatientDetailPage() {
               <CardTitle className="text-2xl">
                 {patient.first_name} {patient.last_name}
               </CardTitle>
-              <p className="text-gray-600 mt-1">Patient ID: {patient.patient_id}</p>
+              <p className="text-gray-600 mt-1">{t("patientDetail.patientId")}: {patient.patient_id}</p>
             </div>
-            <Button variant="outline">Edit Patient</Button>
+            <Button variant="outline">{t("common.actions.editPatient")}</Button>
           </div>
         </CardHeader>
         <CardContent>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold mb-2">Personal Information</h3>
+              <h3 className="font-semibold mb-2">{t("patientDetail.personalInfo")}</h3>
               <dl className="space-y-2 text-sm">
                 <div className="flex">
-                  <dt className="w-32 text-gray-600">Date of Birth:</dt>
+                  <dt className="w-32 text-gray-600">{t("patientDetail.fields.dateOfBirth")}:</dt>
                   <dd className="font-medium">{patient.date_of_birth}</dd>
                 </div>
                 <div className="flex">
-                  <dt className="w-32 text-gray-600">Email:</dt>
-                  <dd className="font-medium">{patient.email || "N/A"}</dd>
+                  <dt className="w-32 text-gray-600">{t("patientDetail.fields.email")}:</dt>
+                  <dd className="font-medium">{patient.email || t("common.notAvailable")}</dd>
                 </div>
                 <div className="flex">
-                  <dt className="w-32 text-gray-600">Phone:</dt>
-                  <dd className="font-medium">{patient.phone || "N/A"}</dd>
+                  <dt className="w-32 text-gray-600">{t("patientDetail.fields.phone")}:</dt>
+                  <dd className="font-medium">{patient.phone || t("common.notAvailable")}</dd>
                 </div>
               </dl>
             </div>
             <div>
-              <h3 className="font-semibold mb-2">Risk Factors</h3>
+              <h3 className="font-semibold mb-2">{t("patientDetail.riskFactors")}</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex items-center gap-2">
                   <span
@@ -84,7 +86,7 @@ export default function PatientDetailPage() {
                       patient.is_smoker ? "bg-red-500" : "bg-gray-300"
                     }`}
                   ></span>
-                  <span>Smoker: {patient.is_smoker ? "Yes" : "No"}</span>
+                  <span>{t("patientDetail.fields.smoker")}: {patient.is_smoker ? t("common.yes") : t("common.no")}</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
@@ -92,7 +94,7 @@ export default function PatientDetailPage() {
                       patient.has_diabetes ? "bg-red-500" : "bg-gray-300"
                     }`}
                   ></span>
-                  <span>Diabetes: {patient.has_diabetes ? "Yes" : "No"}</span>
+                  <span>{t("patientDetail.fields.diabetes")}: {patient.has_diabetes ? t("common.yes") : t("common.no")}</span>
                 </div>
               </div>
             </div>
@@ -107,7 +109,7 @@ export default function PatientDetailPage() {
             <div className="flex items-center gap-4">
               <Calendar className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Total Visits</p>
+                <p className="text-sm text-gray-600">{t("patientDetail.stats.visits")}</p>
                 <p className="text-2xl font-bold">{visits.length}</p>
               </div>
             </div>
@@ -119,7 +121,7 @@ export default function PatientDetailPage() {
             <div className="flex items-center gap-4">
               <Upload className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">X-rays Uploaded</p>
+                <p className="text-sm text-gray-600">{t("patientDetail.stats.xrays")}</p>
                 <p className="text-2xl font-bold">{visits.length * 2}</p>
               </div>
             </div>
@@ -131,7 +133,7 @@ export default function PatientDetailPage() {
             <div className="flex items-center gap-4">
               <FileText className="h-8 w-8 text-blue-600" />
               <div>
-                <p className="text-sm text-gray-600">Reports Generated</p>
+                <p className="text-sm text-gray-600">{t("patientDetail.stats.reports")}</p>
                 <p className="text-2xl font-bold">{visits.length}</p>
               </div>
             </div>
@@ -143,10 +145,10 @@ export default function PatientDetailPage() {
       <Card>
         <CardHeader>
           <div className="flex justify-between items-center">
-            <CardTitle>Visit History</CardTitle>
+            <CardTitle>{t("patientDetail.visitHistory")}</CardTitle>
             <Button onClick={() => setIsAddVisitOpen(true)}>
               <Calendar className="h-4 w-4 mr-2" />
-              Add Visit
+              {t("common.actions.addVisit")}
             </Button>
           </div>
         </CardHeader>

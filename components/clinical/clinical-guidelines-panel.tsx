@@ -6,12 +6,14 @@ import { BookOpen, ExternalLink, CheckSquare, AlertCircle } from "lucide-react";
 import { ClinicalGuideline } from "@/lib/types/clinical";
 import { getRelevantGuidelines } from "@/lib/data/clinical-guidelines";
 import { ClinicalAssessment } from "@/lib/types/clinical";
+import { useLanguage } from "@/lib/i18n/language-context";
 
 interface ClinicalGuidelinesPanelProps {
   assessment?: ClinicalAssessment | null;
 }
 
 export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelProps) {
+  const { t } = useLanguage();
   const guidelines = assessment
     ? getRelevantGuidelines(assessment)
     : [];
@@ -22,14 +24,14 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
             <BookOpen className="h-5 w-5" />
-            Clinical Guidelines
+            {t("clinical.guidelines.title")}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
             <AlertCircle className="h-10 w-10 mx-auto mb-2 text-gray-400" />
             <p className="text-sm">
-              Complete the clinical assessment to see relevant guidelines
+              {t("clinical.guidelines.completeAssessment")}
             </p>
           </div>
         </CardContent>
@@ -44,9 +46,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
           <div className="flex items-start gap-2">
             <BookOpen className="h-4 w-4 text-blue-600 flex-shrink-0 mt-0.5" />
             <div className="text-xs text-blue-900">
-              <strong>Evidence-Based Guidelines:</strong> The following guidelines are
-              provided as clinical decision support. Always use professional judgment
-              and consider individual patient circumstances.
+              <strong>{t("clinical.guidelines.introTitle")}</strong> {t("clinical.guidelines.introDescription")}
             </div>
           </div>
         </CardContent>
@@ -55,7 +55,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
       {guidelines.length === 0 && (
         <Card>
           <CardContent className="py-8 text-center text-gray-500">
-            <p className="text-sm">No specific guidelines match the current assessment</p>
+            <p className="text-sm">{t("clinical.guidelines.empty")}</p>
           </CardContent>
         </Card>
       )}
@@ -80,7 +80,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
               <div>
                 <h4 className="text-sm font-semibold mb-2 flex items-center gap-2">
                   <CheckSquare className="h-4 w-4" />
-                  Diagnostic Criteria
+                  {t("clinical.guidelines.diagnosticCriteria")}
                 </h4>
                 <ul className="space-y-1">
                   {guideline.criteria.map((criterion, index) => (
@@ -96,7 +96,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
             {/* Treatment Sequence */}
             {guideline.treatment_sequence && guideline.treatment_sequence.length > 0 && (
               <div className="bg-gray-50 p-3 rounded-lg">
-                <h4 className="text-sm font-semibold mb-2">Recommended Treatment Sequence</h4>
+                <h4 className="text-sm font-semibold mb-2">{t("clinical.guidelines.treatmentSequence")}</h4>
                 <ol className="space-y-1">
                   {guideline.treatment_sequence.map((step, index) => (
                     <li key={index} className="text-sm text-gray-700">
@@ -110,7 +110,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
             {/* Recommendations */}
             {guideline.recommendations.length > 0 && (
               <div>
-                <h4 className="text-sm font-semibold mb-2">Clinical Recommendations</h4>
+                <h4 className="text-sm font-semibold mb-2">{t("clinical.guidelines.recommendations")}</h4>
                 <ul className="space-y-1">
                   {guideline.recommendations.map((rec, index) => (
                     <li key={index} className="text-sm text-gray-700 flex items-start gap-2">
@@ -125,7 +125,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
             {/* Source and Reference */}
             <div className="pt-2 border-t">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-500">Source: {guideline.source}</span>
+                <span className="text-xs text-gray-500">{t("clinical.guidelines.source")} {guideline.source}</span>
                 {guideline.reference_url && (
                   <a
                     href={guideline.reference_url}
@@ -133,7 +133,7 @@ export function ClinicalGuidelinesPanel({ assessment }: ClinicalGuidelinesPanelP
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1"
                   >
-                    Reference <ExternalLink className="h-3 w-3" />
+                    {t("clinical.guidelines.reference")} <ExternalLink className="h-3 w-3" />
                   </a>
                 )}
               </div>
