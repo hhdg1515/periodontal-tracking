@@ -34,12 +34,16 @@ const getPersistedPatients = () => {
   }
 };
 
-const mockPatients = getPersistedPatients();
-
 export function usePatients() {
-  const [patients, setPatients] = useState(mockPatients);
+  const [patients, setPatients] = useState(basePatients);
   const [isLoading, setIsLoading] = useState(false);
   const [isError, setIsError] = useState(null);
+
+  useEffect(() => {
+    // Load persisted patients on client side
+    const allPatients = getPersistedPatients();
+    setPatients(allPatients);
+  }, []);
 
   const mutate = () => {
     // Reload from localStorage to get newly added patients
