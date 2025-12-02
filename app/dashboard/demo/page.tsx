@@ -239,18 +239,20 @@ export default function DemoPage() {
           </Card>
 
           {/* Annotated X-ray */}
-          <Card className="mb-6">
-            <CardHeader>
-              <CardTitle>Visual Change Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <XRayAnnotationViewer
-                imageUrl={demoCurrentImage}
-                annotations={analysis.indicators}
-                title="Current X-Ray with AI Indicators"
-              />
-            </CardContent>
-          </Card>
+          {analysis.indicators && analysis.indicators.length > 0 && (
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle>Visual Change Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <XRayAnnotationViewer
+                  imageUrl={demoCurrentImage}
+                  indicators={analysis.indicators}
+                  title="Current X-Ray with AI Indicators"
+                />
+              </CardContent>
+            </Card>
+          )}
 
           {/* PDF Reports */}
           <Card>
