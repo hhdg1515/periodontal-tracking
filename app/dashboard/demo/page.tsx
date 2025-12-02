@@ -199,38 +199,38 @@ export default function DemoPage() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <h3 className="font-semibold mb-2">Overall Assessment</h3>
-                  <p className="text-gray-700">{analysis.overall_assessment}</p>
+                  <h3 className="font-semibold mb-2">Overall Summary</h3>
+                  <p className="text-gray-700">{analysis.overall_summary}</p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div className="bg-blue-50 p-4 rounded">
-                    <div className="text-sm text-gray-600">Average Bone Loss</div>
+                    <div className="text-sm text-gray-600">Health Score</div>
                     <div className="text-2xl font-bold text-blue-600">
-                      {analysis.average_bone_loss.toFixed(1)} mm
+                      {analysis.health_score.toFixed(1)}/10
                     </div>
                   </div>
 
                   <div className="bg-orange-50 p-4 rounded">
-                    <div className="text-sm text-gray-600">Risk Level</div>
+                    <div className="text-sm text-gray-600">Concern Level</div>
                     <div className="text-2xl font-bold text-orange-600 uppercase">
-                      {analysis.risk_level}
+                      {analysis.concern_level}
                     </div>
                   </div>
 
                   <div className="bg-green-50 p-4 rounded">
-                    <div className="text-sm text-gray-600">Affected Teeth</div>
+                    <div className="text-sm text-gray-600">Areas Detected</div>
                     <div className="text-2xl font-bold text-green-600">
-                      {analysis.annotations.length}
+                      {analysis.indicators.length}
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-semibold mb-2">Recommendations</h3>
+                  <h3 className="font-semibold mb-2">Discussion Points</h3>
                   <ul className="list-disc list-inside space-y-1 text-gray-700">
-                    {analysis.recommendations.map((rec, idx) => (
-                      <li key={idx}>{rec}</li>
+                    {analysis.discussion_points.map((point, idx) => (
+                      <li key={idx}>{point}</li>
                     ))}
                   </ul>
                 </div>
@@ -241,13 +241,13 @@ export default function DemoPage() {
           {/* Annotated X-ray */}
           <Card className="mb-6">
             <CardHeader>
-              <CardTitle>Visual Bone Loss Analysis</CardTitle>
+              <CardTitle>Visual Change Analysis</CardTitle>
             </CardHeader>
             <CardContent>
               <XRayAnnotationViewer
                 imageUrl={demoCurrentImage}
-                annotations={analysis.annotations}
-                title="Current X-Ray with AI Annotations"
+                annotations={analysis.indicators}
+                title="Current X-Ray with AI Indicators"
               />
             </CardContent>
           </Card>
