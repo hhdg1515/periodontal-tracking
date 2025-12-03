@@ -20,7 +20,9 @@
       "Bash(git init:*)",
       "Bash(cat:*)",
       "Bash(npx tsc --noEmit)",
-      "Bash(git remote add:*)"
+      "Bash(git remote add:*)",
+      "Bash(git merge:*)",
+      "Bash(git stash:*)"
     ],
     "deny": [],
     "ask": []
