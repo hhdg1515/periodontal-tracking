@@ -169,6 +169,74 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
         reports: "Reports Generated",
       },
       visitHistory: "Visit History",
+      services: {
+        tabs: {
+          overview: "Overview",
+          periodontal: "Periodontal",
+          cosmetic: "Cosmetic",
+          implant: "Implant",
+          endodontic: "Endodontic",
+        },
+        overview: {
+          title: "Cross-Service Snapshot",
+          description: "Track periodontal, cosmetic, and implant touchpoints for this patient.",
+        },
+        cards: {
+          periodontal: {
+            title: "Periodontal Visits",
+            subtitle: "{count} X-rays uploaded",
+          },
+          cosmetic: {
+            title: "Cosmetic Consultations",
+            subtitle: "{count} treatment plans in motion",
+          },
+          implant: {
+            title: "Implant Cases",
+            subtitle: "{count} active cases",
+          },
+        },
+        cosmetic: {
+          consultationsTitle: "Consultations",
+          consultationsDescription: "Smile assessments, color analysis, and photography captured during cosmetic consults.",
+          consultationsEmpty: "No cosmetic consultations yet.",
+          treatmentsTitle: "Treatment Plans",
+          treatmentsDescription: "Monitor whitening, veneers, and smile-makeover progress.",
+          treatmentsEmpty: "No cosmetic treatment plans for this patient.",
+        },
+        implant: {
+          casesTitle: "Implant Cases",
+          casesEmpty: "No implant cases recorded.",
+          aiHint: "CBCT AI planning will surface here with bone density and nerve proximity insights.",
+        },
+        endodontic: {
+          title: "Endodontic Roadmap",
+          description: "Root canal AI is on the roadmap. Patients with endodontic visits will appear here once the module ships.",
+          casesTitle: "Root Canal Cases",
+          casesDescription: "Monitor each tooth's vitality tests, instrumentation progress, and upcoming appointments.",
+          casesEmpty: "No root canal records for this patient yet.",
+          aiHint: "AI Assist",
+        },
+      },
+      contextBanner: {
+        cosmetic: {
+          badge: "Cosmetic Module",
+          title: "Viewing data from the Cosmetic Dentistry module",
+          description: "Stay in this patient hub to review periodontal history, then jump back to continue smile design work.",
+          cta: "Return to Cosmetic",
+        },
+        implant: {
+          badge: "Implant Module",
+          title: "Viewing data from the Implant module",
+          description: "Review the full-periodontal timeline here and head back to finalize the implant case plan.",
+          cta: "Return to Implant",
+        },
+        endodontic: {
+          badge: "Endodontic Module",
+          title: "Viewing data from the Endodontic module",
+          description: "Check periodontal progress while AI tracks canal healing, then return to finalize the root canal visit.",
+          cta: "Return to Endodontic",
+        },
+      },
     },
     visitList: {
       loading: "Loading visits...",
@@ -843,6 +911,74 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
         reports: "已产生报告",
       },
       visitHistory: "回诊纪录",
+      services: {
+        tabs: {
+          overview: "总览",
+          periodontal: "牙周病",
+          cosmetic: "美容",
+          implant: "种植牙",
+          endodontic: "根管治疗",
+        },
+        overview: {
+          title: "跨服务总览",
+          description: "统一掌握此病人在牙周、美容、种植牙的所有触点。",
+        },
+        cards: {
+          periodontal: {
+            title: "牙周回诊",
+            subtitle: "已上传 {count} 张 X 光",
+          },
+          cosmetic: {
+            title: "美容咨询",
+            subtitle: "当前 {count} 个治疗方案",
+          },
+          implant: {
+            title: "种植案例",
+            subtitle: "活跃案例 {count} 个",
+          },
+        },
+        cosmetic: {
+          consultationsTitle: "美容咨询",
+          consultationsDescription: "记录笑容评估、色阶分析与照片资料。",
+          consultationsEmpty: "目前没有美容咨询纪录。",
+          treatmentsTitle: "美容治疗方案",
+          treatmentsDescription: "追踪美白、贴面与笑容改造的执行进度。",
+          treatmentsEmpty: "尚未建立美容治疗方案。",
+        },
+        implant: {
+          casesTitle: "种植案例",
+          casesEmpty: "暂无种植牙记录。",
+          aiHint: "未来将在此显示 CBCT AI 骨密度、神经位置等规划建议。",
+        },
+        endodontic: {
+          title: "根管治疗路线图",
+          description: "根管模块开发中，完成后会在此呈现相关案例与 AI 评估。",
+          casesTitle: "根管治疗记录",
+          casesDescription: "查看牙髓测试结果、根管预备进度与下一次复诊安排。",
+          casesEmpty: "此病人目前没有根管治疗记录。",
+          aiHint: "AI 辅助提示",
+        },
+      },
+      contextBanner: {
+        cosmetic: {
+          badge: "美容模块",
+          title: "您正从牙齿美容模块查看此病人",
+          description: "可在此确认牙周历史，再返回美容流程继续设计笑容方案。",
+          cta: "返回美容模块",
+        },
+        implant: {
+          badge: "种植模块",
+          title: "您正从种植牙模块查看此病人",
+          description: "在综合中心查看牙周与 AI 分析，然后回到种植流程完成规划。",
+          cta: "返回种植模块",
+        },
+        endodontic: {
+          badge: "根管模块",
+          title: "您正从根管治疗模块查看此病人",
+          description: "检查牙周与根尖愈合情况，再回到根管流程继续操作。",
+          cta: "返回根管模块",
+        },
+      },
     },
     visitList: {
       loading: "载入回诊纪录…",
