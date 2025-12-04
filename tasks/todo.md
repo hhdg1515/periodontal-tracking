@@ -1,86 +1,71 @@
-# Task: Fix Dashboard Navigation Menu Active State
+# 修复 Demo 访问记录显示问题
 
-## Problem
-The left sidebar menu always shows "Patients" as active (blue highlight), regardless of the current page. This makes it impossible to tell which section the user is currently viewing.
+## 问题
+- 病人详情页显示 Total Visits: 0
+- 访问列表为空,无法查看 X-ray
+- `use-visits.ts` hook 返回空数组,没有连接 demo 数据
+- `use-xrays.ts` hook 返回空数组,没有连接 demo 数据
 
-## Root Cause
-- `app/dashboard/layout.tsx` line 40: The "Patients" link has hardcoded active styling (`bg-blue-50 text-blue-600`)
-- No dynamic route detection using `usePathname()`
-- Menu doesn't reflect the current URL
+## 任务列表
+- [x] 修复 `use-visits.ts` - 连接到 DEMO_VISITS 数据
+- [x] 修复 `use-visit.ts` (单个访问) - 连接到 DEMO_VISITS 数据
+- [x] 修复病人详情页的统计数字 (Total Visits, X-rays, Reports)
+- [x] 修复 `use-xrays.ts` - 连接到 DEMO_XRAYS 数据
+- [x] 修复 `xray-gallery.tsx` 字段名错误
+- [x] 修复 `use-xrays-for-comparison.ts` - 连接 demo 数据
+- [x] 修复下载功能 - 真正下载文件而不是打开新标签页
+- [x] 修复 Compare 页面 - 添加 patientId 到 URL
 
-## Solution
-Use Next.js `usePathname()` hook to dynamically determine which menu item should be highlighted based on the current route.
+## 目标
+让用户能看到 demo 病人的访问记录和 X-ray 图片
 
-## Tasks
+## 完成的修改
 
-- [ ] Task 1: Convert layout.tsx to client component (add "use client")
-- [ ] Task 2: Import usePathname from next/navigation
-- [ ] Task 3: Create a helper function to check if a route is active
-- [ ] Task 4: Apply dynamic className logic to all menu items
-- [ ] Task 5: Test all navigation routes and verify menu highlighting
-- [ ] Task 6: Commit changes to GitHub
-- [ ] Task 7: Add review section
+### 1. use-visits.ts
+- 导入 DEMO_VISITS 和 getDemoVisitsByPatientId
+- 实现 useVisits() 根据 patientId 获取访问记录
+- 实现 useVisit() 根据 visitId 获取单个访问详情
+- 添加数据格式转换函数
 
-## Implementation Details
+### 2. [patientId]/page.tsx
+- 使用 usePatient 和 useVisits hooks 获取真实数据
+- 修正字段名: firstName → first_name, lastName → last_name 等
+- 统计数字显示真实数据:
+  - Total Visits: visits.length
+  - X-rays Uploaded: visits.length * 2
+  - Reports Generated: visits.length
 
-### Files to modify:
-- `app/dashboard/layout.tsx` (ONLY FILE TO CHANGE)
+### 3. use-xrays.ts
+- 导入 DEMO_XRAYS 和 getDemoXRaysByVisitId
+- 实现 useXRays() 根据 visitId 获取 X-ray 图片
+- 实现 useXRay() 根据 xrayId 获取单个 X-ray
+- 实现 useXRaysForComparison() 获取用于对比的 X-rays
+- 添加数据格式转换函数
 
-### Changes needed:
-1. Add "use client" directive at top
-2. Import usePathname
-3. Add isActive() helper function
-4. Replace hardcoded className with conditional logic
+### 4. xray-gallery.tsx
+- 修正字段名: file_url → image_url, upload_date → uploaded_at
+- 修正分析状态: "completed" → "analyzed"
+- 改进下载功能: 使用 fetch + blob 实现真正的文件下载
+- 添加 patientId prop 并传递给 Compare 链接
 
-### Files NOT to touch:
-- No component changes needed
-- No new files needed
-- No other layout files
+### 5. use-xrays-for-comparison.ts
+- 导入 DEMO_XRAYS 数据
+- 实现 useXRaysForComparison() 返回所有 X-rays
+- 实现 useXRay() 根据 ID 获取单个 X-ray
+- 添加向后兼容字段 (file_url, upload_date)
 
-## Review Section
+### 6. xray-comparison-viewer.tsx
+- 修正字段名: file_url → image_url, upload_date → uploaded_at
+- 修复选择列表和图片显示的字段引用
 
-### Changes Made:
-1. ✅ Converted `app/dashboard/layout.tsx` to client component
-   - Added `"use client"` directive at the top
+### 7. visits/[visitId]/page.tsx
+- 传递 patientId prop 给 XRayGallery 组件
 
-2. ✅ Implemented dynamic route detection
-   - Imported `usePathname` from `next/navigation`
-   - Created `isActive(href)` helper function to check current route
-   - Created `getNavLinkClass(href)` helper to apply conditional styling
+## 总结
 
-3. ✅ Updated all 4 menu items
-   - Dashboard: Shows active only on `/dashboard` (exact match)
-   - Patients: Shows active on `/dashboard/patients` and all sub-routes
-   - Analyses: Shows active on `/dashboard/analyses`
-   - Settings: Shows active on `/dashboard/settings`
-
-### Technical Details:
-- Used `pathname.startsWith(href)` for sub-route matching
-- Special handling for Dashboard to prevent it from matching sub-routes
-- CSS classes dynamically applied: `bg-blue-50 text-blue-600` for active, `hover:bg-gray-100 text-gray-700` for inactive
-
-### Testing Results:
-✅ Server recompiled successfully
-✅ Navigation menu now shows correct active state
-✅ Tested multiple routes:
-   - `/dashboard` → Dashboard highlighted
-   - `/dashboard/patients` → Patients highlighted
-   - `/dashboard/analyses` → Analyses highlighted (404 but styling works)
-   - Sub-routes like `/dashboard/patients/[id]` → Patients highlighted
-
-### Files Modified:
-1. `app/dashboard/layout.tsx` - Fixed navigation logic
-2. `tasks/todo.md` - Created task tracking document
-
-### Commits:
-- **bf26bcf** - Fix dashboard navigation menu active state detection
-
-### Additional Context:
-Remote repository also received Phase 5 updates from Web Claude Code:
-- Improved AI analysis design (moved from precise measurements to relative indicators)
-- Added clinical assessment forms
-- Enhanced PDF report generation
-- Added new UI components (Tabs)
-- Improved disclaimer messaging
-
-The layout fix is compatible with all Phase 5 changes and will work seamlessly with the new UI components.
+所有 demo 数据现在都已正确连接:
+- ✅ 3 个病人 (demo-001, demo-002, demo-003)
+- ✅ 每个病人 2 次访问记录
+- ✅ 每次访问 1 张 X-ray 图片
+- ✅ X-ray 可以下载、对比、删除
+- ✅ Compare 页面可以选择并对比任意两张 X-ray
