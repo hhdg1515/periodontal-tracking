@@ -6,9 +6,17 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, ArrowDown, ArrowUp, Minus, FileText, Loader2, Info } from "lucide-react";
 import { useXRay } from "@/lib/hooks/use-xrays-for-comparison";
 import { analyzeXRayComparison, AnalysisResult } from "@/lib/ai/analysis-service";
-import { generateDoctorReport, generatePatientReport, downloadPDF } from "@/lib/reports/pdf-generator";
 import { format } from "date-fns";
 import { useLanguage } from "@/lib/i18n/language-context";
+
+let pdfModulePromise: Promise<typeof import("@/lib/reports/pdf-generator")> | null = null;
+
+async function loadPdfModule() {
+  if (!pdfModulePromise) {
+    pdfModulePromise = import("@/lib/reports/pdf-generator");
+  }
+  return pdfModulePromise;
+}
 
 interface AnalysisPanelProps {
   baselineId: string | null;
@@ -59,6 +67,7 @@ export function AnalysisPanel({ baselineId, currentId }: AnalysisPanelProps) {
 
     setIsGeneratingReport(true);
     try {
+      const { generateDoctorReport, generatePatientReport, downloadPDF } = await loadPdfModule();
       // Mock patient info - in production, fetch from database
       const patientInfo = {
         name: 'John Smith',

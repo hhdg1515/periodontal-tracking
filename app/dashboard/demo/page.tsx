@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { XRayAnnotationViewer } from "@/components/analysis/xray-annotation-viewer";
 import { analyzeXRayComparison } from "@/lib/ai/analysis-service";
-import { generateDoctorReport, generatePatientReport, downloadPDF } from "@/lib/reports/pdf-generator";
 import { DEMO_PATIENTS, getDemoPatientWithXRays } from "@/lib/demo/mock-data";
 import { FileText, Download, Loader2 } from "lucide-react";
 import type { AnalysisResult } from "@/lib/ai/analysis-service";
 import { useLanguage } from "@/lib/i18n/language-context";
+
+let pdfModulePromise: Promise<typeof import("@/lib/reports/pdf-generator")> | null = null;
+
+async function loadPdfModule() {
+  if (!pdfModulePromise) {
+    pdfModulePromise = import("@/lib/reports/pdf-generator");
+  }
+  return pdfModulePromise;
+}
 
 export default function DemoPage() {
   const [selectedPatientId, setSelectedPatientId] = useState(DEMO_PATIENTS[0].id);
@@ -43,6 +51,7 @@ export default function DemoPage() {
 
     setIsGeneratingReport(true);
     try {
+      const { generateDoctorReport, generatePatientReport, downloadPDF } = await loadPdfModule();
       const baselineDate = patientData.xrays[0]?.uploadedAt || new Date();
       const currentDate = patientData.xrays[1]?.uploadedAt || new Date();
 

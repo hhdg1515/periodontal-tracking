@@ -1,10 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
 import type { SupportedLanguage } from "../i18n/translations";
-
-// Initialize Anthropic client
-const anthropic = new Anthropic({
-  apiKey: process.env.NEXT_PUBLIC_ANTHROPIC_API_KEY || '',
-});
 
 export interface ChangeIndicator {
   tooth_region: string; // Changed from tooth_number to avoid false precision
