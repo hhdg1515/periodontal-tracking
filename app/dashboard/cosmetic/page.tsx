@@ -9,6 +9,7 @@ import {
   DEMO_CONSULTATIONS,
   DEMO_TREATMENT_PLANS,
   DEMO_COSMETIC_STATS,
+  DEMO_BEFORE_AFTER,
 } from '@/lib/demo/cosmetic-mock-data';
 import { TREATMENT_TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/types/cosmetic';
 
@@ -17,59 +18,119 @@ export default function CosmeticDashboardPage() {
   const recentConsultations = DEMO_CONSULTATIONS.slice(0, 3);
   const activeTreatments = DEMO_TREATMENT_PLANS.filter(p => p.status === 'in_progress');
 
+  // 为快速操作卡片计算统计数据
+  const pendingConsultations = DEMO_CONSULTATIONS.filter(c => c.status === 'scheduled').length;
+  const beforeAfterPhotos = DEMO_BEFORE_AFTER.length;
+
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Sparkles className="h-8 w-8 text-pink-500" />
-            牙齿美容
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            管理美容咨询、治疗方案和 Before/After 效果展示
-          </p>
-        </div>
-        <Button className="bg-pink-500 hover:bg-pink-600">
-          <Calendar className="mr-2 h-4 w-4" />
-          新建咨询
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Sparkles className="h-8 w-8 text-pink-500" />
+          牙齿美容
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          管理美容咨询、治疗方案和 Before/After 效果展示
+        </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-pink-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总咨询数</CardTitle>
+            <CardTitle className="text-sm font-medium">初诊数</CardTitle>
             <Calendar className="h-4 w-4 text-pink-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_consultations}</div>
-            <p className="text-xs text-muted-foreground">本月新增 3 个</p>
+            <div className="text-2xl font-bold">{stats.consultation_count}</div>
+            <p className="text-xs text-muted-foreground">过去30天新增 {stats.monthly_new_consultations} 个</p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200">
+        <Card className="border-indigo-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">进行中治疗</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium">复诊数</CardTitle>
+            <TrendingUp className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active_treatments}</div>
-            <p className="text-xs text-muted-foreground">平均进度 55%</p>
+            <div className="text-2xl font-bold">{stats.followup_count}</div>
+            <p className="text-xs text-muted-foreground">本月约下来的复诊 {stats.monthly_scheduled_followups} 次</p>
           </CardContent>
         </Card>
 
         <Card className="border-green-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">已完成治疗</CardTitle>
+            <CardTitle className="text-sm font-medium">已完成</CardTitle>
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed_treatments}</div>
-            <p className="text-xs text-muted-foreground">本月完成 1 个</p>
+            <div className="text-2xl font-bold">{stats.completed_count}</div>
+            <p className="text-xs text-muted-foreground">本月完成 {stats.monthly_completed} 个</p>
           </CardContent>
         </Card>
+
+        <Card className="border-purple-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">{stats.service_specific_metric?.label}</CardTitle>
+            <Sparkles className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.service_specific_metric?.value}</div>
+            <p className="text-xs text-muted-foreground">{stats.service_specific_metric?.description}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Quick Actions - Simple Cards */}
+      <div className="grid gap-4 md:grid-cols-3">
+        {/* Card 1: Consultation List */}
+        <Link href="/dashboard/cosmetic/consultations">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="h-7 w-7" />
+              </div>
+              <ArrowRight className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+            <div className="mt-4 space-y-1">
+              <h3 className="text-lg font-semibold text-gray-900">咨询列表</h3>
+              <p className="text-sm text-gray-600">管理美容咨询记录</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Card 2: Treatment Plans */}
+        <Link href="/dashboard/cosmetic/treatments">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Sparkles className="h-7 w-7" />
+              </div>
+              <ArrowRight className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+            <div className="mt-4 space-y-1">
+              <h3 className="text-lg font-semibold text-gray-900">治疗方案</h3>
+              <p className="text-sm text-gray-600">查看和管理治疗计划</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* Card 3: Before/After Comparison */}
+        <Link href="/dashboard/cosmetic/before-after">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-green-100 text-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <TrendingUp className="h-7 w-7" />
+              </div>
+              <ArrowRight className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+            <div className="mt-4 space-y-1">
+              <h3 className="text-lg font-semibold text-gray-900">效果对比</h3>
+              <p className="text-sm text-gray-600">Before/After 照片展示</p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -212,40 +273,6 @@ export default function CosmeticDashboardPage() {
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>快速操作</CardTitle>
-          <CardDescription>常用功能快捷入口</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Link href="/dashboard/cosmetic/consultations">
-              <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                <Calendar className="h-6 w-6 text-pink-500" />
-                <span>咨询列表</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/cosmetic/treatments">
-              <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                <Sparkles className="h-6 w-6 text-blue-500" />
-                <span>治疗方案</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/cosmetic/before-after">
-              <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                <TrendingUp className="h-6 w-6 text-green-500" />
-                <span>效果对比</span>
-              </Button>
-            </Link>
-            <Button variant="outline" className="w-full h-20 flex-col gap-2" disabled>
-              <Sparkles className="h-6 w-6 text-purple-500" />
-              <span>案例档案</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

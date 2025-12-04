@@ -207,9 +207,9 @@ function TreatmentCard({ treatment }: { treatment: any }) {
                   查看病人
                 </Button>
               </Link>
-              <Link href={`/dashboard/cosmetic/treatments/${treatment.id}`}>
+              <Link href={`/dashboard/cosmetic/consultations/${treatment.consultation_id}`}>
                 <Button variant="outline" size="sm" className="w-full">
-                  查看详情
+                  查看咨询详情
                 </Button>
               </Link>
             </div>
@@ -218,6 +218,14 @@ function TreatmentCard({ treatment }: { treatment: any }) {
               <Button size="sm" className="w-full bg-pink-500 hover:bg-pink-600">
                 更新进度
               </Button>
+            )}
+
+            {treatment.status === 'completed' && (
+              <Link href={`/dashboard/cosmetic/before-after?treatment=${treatment.id}`}>
+                <Button size="sm" className="w-full bg-green-500 hover:bg-green-600">
+                  查看效果对比
+                </Button>
+              </Link>
             )}
           </div>
         </div>

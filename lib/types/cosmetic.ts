@@ -85,6 +85,12 @@ export interface CosmeticTreatmentPlan {
   during_photos?: string[];
   after_photos?: string[];
 
+  // 治疗总结（已完成时）
+  treatment_summary?: string;        // 治疗总结
+  completion_notes?: string;         // 完成备注
+  patient_satisfaction?: number;     // 患者满意度 (1-10)
+  actual_completion_date?: string;   // 实际完成日期
+
   created_at: string;
   updated_at: string;
 }

@@ -5,9 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Search, Sparkles, DollarSign, Clock } from 'lucide-react';
+import { Calendar, Search, Sparkles, Clock, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import { DEMO_CONSULTATIONS } from '@/lib/demo/cosmetic-mock-data';
+import { DEMO_CONSULTATIONS, DEMO_TREATMENT_PLANS } from '@/lib/demo/cosmetic-mock-data';
 import { TREATMENT_TYPE_LABELS, STATUS_LABELS, STATUS_COLORS } from '@/lib/types/cosmetic';
 
 export default function ConsultationsPage() {
@@ -90,15 +90,18 @@ export default function ConsultationsPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-green-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">预计收入</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">已完成咨询</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              ¥{DEMO_CONSULTATIONS.reduce((sum, c) => sum + (c.estimated_cost || 0), 0).toLocaleString()}
+              {DEMO_CONSULTATIONS.filter(c => c.status === 'completed').length}
             </div>
+            <p className="text-xs text-muted-foreground">
+              已转化为治疗 {DEMO_TREATMENT_PLANS.length} 个
+            </p>
           </CardContent>
         </Card>
       </div>

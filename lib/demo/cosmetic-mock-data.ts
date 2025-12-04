@@ -4,6 +4,7 @@ import {
   BeforeAfterPhoto,
   CosmeticStats,
 } from '../types/cosmetic';
+import type { ServiceStats } from '@/lib/types/service-stats';
 
 // =====================================================
 // Mock 美容咨询数据
@@ -227,6 +228,9 @@ export const DEMO_TREATMENT_PLANS: CosmeticTreatmentPlan[] = [
     treatment_type: 'bonding',
     treatment_name: '前牙粘接修复',
     description: '使用复合树脂修复前牙裂纹，恢复美观和功能',
+    treatment_summary: '本次治疗成功修复了患者右上1号牙的裂纹问题。使用高质量复合树脂进行分层充填，完美匹配原牙颜色。患者对修复效果非常满意，咬合功能恢复良好，建议每6个月复查一次。',
+    actual_completion_date: '2024-11-25',
+    patient_satisfaction: 9,
     steps: [
       {
         step_number: 1,
@@ -314,7 +318,22 @@ export const DEMO_BEFORE_AFTER: BeforeAfterPhoto[] = [
 // Mock 统计数据
 // =====================================================
 
-export const DEMO_COSMETIC_STATS: CosmeticStats = {
+export const DEMO_COSMETIC_STATS: ServiceStats = {
+  consultation_count: 5,           // 初诊数：5位新患者
+  followup_count: 8,                // 复诊数：8次回访
+  completed_count: 1,               // 已完成：1个病例
+  monthly_new_consultations: 3,     // 本月新增初诊：3位
+  monthly_scheduled_followups: 3,   // 本月约下来的复诊：3次
+  monthly_completed: 1,             // 本月已完成：1个
+  service_specific_metric: {
+    label: '总预约',
+    value: 13,
+    description: '初诊+复诊总数',
+  },
+};
+
+// 保留旧的类型以兼容现有代码
+export const DEMO_COSMETIC_STATS_LEGACY: CosmeticStats = {
   total_consultations: 5,
   active_treatments: 2,
   completed_treatments: 1,

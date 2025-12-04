@@ -19,6 +19,7 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
       actions: {
         addPatient: "Add Patient",
         addVisit: "Add Visit",
+        newAppointment: "New Appointment",
         editPatient: "Edit Patient",
         editProfile: "Edit Profile",
         changePassword: "Change Password",
@@ -762,6 +763,7 @@ export const translations: Record<SupportedLanguage, TranslationTree> = {
       actions: {
         addPatient: "新增病人",
         addVisit: "新增回诊",
+        newAppointment: "新增预约",
         editPatient: "编辑病人",
         editProfile: "编辑资料",
         changePassword: "变更密码",

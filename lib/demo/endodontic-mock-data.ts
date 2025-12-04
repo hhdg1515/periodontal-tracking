@@ -3,6 +3,7 @@ import {
   EndodonticStats,
   EndodonticVisit,
 } from "@/lib/types/endodontic";
+import type { ServiceStats } from '@/lib/types/service-stats';
 
 // =====================================================
 // Mock 根管治疗数据
@@ -136,7 +137,22 @@ export const DEMO_ENDODONTIC_CASES: EndodonticCase[] = [
   },
 ];
 
-export const DEMO_ENDODONTIC_STATS: EndodonticStats = {
+export const DEMO_ENDODONTIC_STATS: ServiceStats = {
+  consultation_count: 3,           // 初诊数：3位新患者
+  followup_count: 7,                // 复诊数：7次回访
+  completed_count: 0,               // 已完成：0个病例
+  monthly_new_consultations: 2,     // 本月新增初诊：2位
+  monthly_scheduled_followups: 2,   // 本月约下来的复诊：2次
+  monthly_completed: 0,             // 本月已完成：0个
+  service_specific_metric: {
+    label: '总预约',
+    value: 10,
+    description: '初诊+复诊总数',
+  },
+};
+
+// 保留旧的类型以兼容现有代码
+export const DEMO_ENDODONTIC_STATS_LEGACY: EndodonticStats = {
   total_cases: DEMO_ENDODONTIC_CASES.length,
   active_cases: DEMO_ENDODONTIC_CASES.filter((c) => c.status === "in_progress")
     .length,

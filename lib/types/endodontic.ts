@@ -53,7 +53,7 @@ export interface EndodonticStats {
 
 export const STATUS_LABELS: Record<EndodonticCaseStatus, string> = {
   diagnosis: "诊断",
-  in_progress: "治疗中",
+  in_progress: "进行中",
   completed: "已完成",
   follow_up: "复诊中",
 };

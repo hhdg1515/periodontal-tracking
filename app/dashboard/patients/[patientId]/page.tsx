@@ -45,6 +45,8 @@ import {
   PULP_STATUS_LABELS,
   PERIAPICAL_LABELS,
 } from "@/lib/types/endodontic";
+import { useAppointments } from "@/lib/hooks/use-appointments";
+import { Appointment } from "@/lib/types/appointment";
 
 const formatDisplayDate = (value?: string) => {
   if (!value) return "";
@@ -73,15 +75,6 @@ export default function PatientDetailPage() {
 
   const { patient: patientData } = usePatient(patientId);
   const { visits } = useVisits(patientId);
-  const totalVisits = visits.length;
-  const totalXrays = visits.reduce(
-    (total, visit) => total + (visit.xrays?.length || 0),
-    0
-  );
-  const totalReports = visits.reduce(
-    (total, visit) => total + (visit.analysis_results?.length || 0),
-    0
-  );
 
   const [activeTab, setActiveTab] = useState<PatientTab>(() =>
     resolveTab(searchParams?.get("tab"))
@@ -128,6 +121,50 @@ export default function PatientDetailPage() {
     () => getDemoEndodonticCasesByPatientId(patientId),
     [patientId]
   );
+  const { appointments: patientAppointments } = useAppointments(patientId);
+  const upcomingAppointments = useMemo(
+    () =>
+      [...patientAppointments]
+        .filter(
+          (appt: Appointment) =>
+            appt.status === "scheduled" || appt.status === "confirmed"
+        )
+        .sort(
+          (a, b) => new Date(a.datetime).getTime() - new Date(b.datetime).getTime()
+        ),
+    [patientAppointments]
+  );
+
+  const periodontalVisitCount = visits.length;
+  const periodontalXrays = useMemo(
+    () => visits.reduce((total, visit) => total + (visit.xrays?.length || 0), 0),
+    [visits]
+  );
+
+  // 聚合所有服务的统计数据
+  const totalVisits = useMemo(
+    () =>
+      periodontalVisitCount +
+      cosmeticConsultations.length +
+      implantCases.length +
+      endodonticCases.length,
+    [periodontalVisitCount, cosmeticConsultations.length, implantCases.length, endodonticCases.length]
+  );
+
+  const totalXrays = useMemo(
+    () =>
+      periodontalXrays +
+      implantCases.length + // 种植牙CBCT扫描
+      endodonticCases.length, // 根管X光
+    [periodontalXrays, implantCases.length, endodonticCases.length]
+  );
+
+  const totalReports = useMemo(
+    () => visits.reduce((total, visit) => total + (visit.analysis_results?.length || 0), 0)
+      + cosmeticTreatments.length  // 美容治疗方案
+      + implantCases.length, // 种植牙计划
+    [visits, cosmeticTreatments.length, implantCases.length]
+  );
 
   // Use fetched patient data or fallback
   const patient = patientData || {
@@ -147,9 +184,9 @@ export default function PatientDetailPage() {
       {
         id: "periodontal",
         title: t("patientDetail.services.cards.periodontal.title"),
-        value: totalVisits,
+        value: periodontalVisitCount,
         helper: t("patientDetail.services.cards.periodontal.subtitle", {
-          count: totalXrays,
+          count: periodontalXrays,
         }),
         icon: Activity,
         iconColor: "text-blue-600",
@@ -177,15 +214,29 @@ export default function PatientDetailPage() {
         iconColor: "text-purple-600",
         iconBg: "bg-purple-50",
       },
+      {
+        id: "appointments",
+        title: "预约",
+        value: patientAppointments.length,
+        helper:
+          upcomingAppointments.length > 0
+            ? `即将到来 ${upcomingAppointments.length} 个`
+            : "暂无预约",
+        icon: Calendar,
+        iconColor: "text-blue-600",
+        iconBg: "bg-blue-50",
+      },
     ],
     [
+      periodontalVisitCount,
+      periodontalXrays,
       activeImplantCases.length,
       cosmeticConsultations.length,
       cosmeticTreatments.length,
       implantCases.length,
+      patientAppointments.length,
+      upcomingAppointments.length,
       t,
-      totalVisits,
-      totalXrays,
     ]
   );
 
@@ -386,38 +437,86 @@ export default function PatientDetailPage() {
         </TabsList>
 
         <TabsContent value="overview">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("patientDetail.services.overview.title")}</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                {t("patientDetail.services.overview.description")}
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
-                {serviceHighlights.map((service) => {
-                  const Icon = service.icon;
-                  return (
-                    <div
-                      key={service.id}
-                      className="flex items-start gap-4 rounded-2xl border p-4"
-                    >
-                      <div className={`rounded-full p-3 ${service.iconBg}`}>
-                        <Icon className={`h-6 w-6 ${service.iconColor}`} />
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>{t("patientDetail.services.overview.title")}</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  {t("patientDetail.services.overview.description")}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-4">
+                  {serviceHighlights.map((service) => {
+                    const Icon = service.icon;
+                    return (
+                      <div
+                        key={service.id}
+                        className="flex items-start gap-4 rounded-2xl border p-4"
+                      >
+                        <div className={`rounded-full p-3 ${service.iconBg}`}>
+                          <Icon className={`h-6 w-6 ${service.iconColor}`} />
+                        </div>
+                        <div>
+                          <p className="text-sm text-muted-foreground">{service.title}</p>
+                          <p className="text-3xl font-semibold mt-1">{service.value}</p>
+                          <p className="text-xs text-muted-foreground mt-2">
+                            {service.helper}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">{service.title}</p>
-                        <p className="text-3xl font-semibold mt-1">{service.value}</p>
-                        <p className="text-xs text-muted-foreground mt-2">
-                          {service.helper}
-                        </p>
-                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>预约</CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                  >
+                    <Link href="/dashboard/appointments">前往预约列表</Link>
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  集中展示该患者的预约，新增的预约会与全局列表同步
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {upcomingAppointments.slice(0, 3).map((appt) => (
+                  <div key={appt.id} className="flex items-center justify-between rounded-xl border p-3">
+                    <div className="space-y-1">
+                      <p className="font-semibold text-gray-900">
+                        {appt.service === "implant" ? "种植" : appt.service === "periodontal" ? "牙周" : appt.service === "endodontic" ? "根管" : "美容"}
+                        {appt.tooth ? ` · ${appt.tooth}` : ""}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {appt.notes || "无备注"}
+                      </p>
                     </div>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                    <div className="text-right space-y-1">
+                      <Badge variant="secondary" className="bg-blue-100 text-blue-700 text-xs">
+                        {appt.status === "scheduled" ? "已预约" : appt.status === "confirmed" ? "已确认" : appt.status === "completed" ? "已完成" : "已取消"}
+                      </Badge>
+                      <p className="text-sm text-gray-700">
+                        {new Date(appt.datetime).toLocaleString("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                {upcomingAppointments.length === 0 && (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    暂无预约记录，可在右上角“新建预约”添加。
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="periodontal">
@@ -486,6 +585,9 @@ export default function PatientDetailPage() {
                         >
                           {COSMETIC_STATUS_LABELS[consultation.status]}
                         </Badge>
+                        <Link href={`/dashboard/cosmetic/consultations/${consultation.id}`}>
+                          <Button variant="outline" size="sm">查看详情</Button>
+                        </Link>
                       </div>
                     ))}
                   </div>
@@ -541,6 +643,9 @@ export default function PatientDetailPage() {
                           {formatDisplayDate(plan.expected_completion) ||
                             t("common.notAvailable")}
                         </p>
+                        <Link href="/dashboard/cosmetic/treatments">
+                          <Button variant="outline" size="sm">查看详情</Button>
+                        </Link>
                       </div>
                     ))}
                   </div>
@@ -606,6 +711,9 @@ export default function PatientDetailPage() {
                       {caseItem.notes && (
                         <p className="text-sm text-muted-foreground">{caseItem.notes}</p>
                       )}
+                      <Link href={`/dashboard/implant/cases/${caseItem.id}`}>
+                        <Button variant="outline" size="sm">查看详情</Button>
+                      </Link>
                     </div>
                   ))}
                 </div>
@@ -718,6 +826,10 @@ export default function PatientDetailPage() {
                           </div>
                         ))}
                       </div>
+
+                      <Link href={`/dashboard/endodontic/cases/${endoCase.id}`}>
+                        <Button variant="outline" size="sm" className="mt-2">查看详情</Button>
+                      </Link>
                     </div>
                   ))}
                 </div>

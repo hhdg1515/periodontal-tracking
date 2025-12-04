@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -99,6 +100,25 @@ export default function ImplantCasesPage() {
 function ImplantCaseCard({ implantCase }: { implantCase: any }) {
   const currentTimeline = implantCase.timeline.find((t: any) => t.status === 'current');
   const patientHubUrl = `/dashboard/patients/${implantCase.patient_id}?tab=implant&context=implant`;
+  const stageOptions = [
+    { value: 'planning', label: '手术规划' },
+    { value: 'surgery', label: '手术植入' },
+    { value: 'healing', label: '愈合期' },
+    { value: 'restoration', label: '最终修复' },
+  ] as const;
+  const [stage, setStage] = useState(implantCase.current_stage);
+  const [progress, setProgress] = useState(implantCase.progress_percentage);
+
+  const handleStageChange = (value: string) => {
+    setStage(value);
+    const progressMap: Record<string, number> = {
+      planning: 25,
+      surgery: 50,
+      healing: 75,
+      restoration: 100,
+    };
+    setProgress(progressMap[value] ?? implantCase.progress_percentage);
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -145,9 +165,9 @@ function ImplantCaseCard({ implantCase }: { implantCase: any }) {
             <div className="flex items-center gap-2">
               <Badge
                 variant="secondary"
-                className={`bg-${getStageColor(implantCase.current_stage)}-100 text-${getStageColor(implantCase.current_stage)}-700`}
+                className={`bg-${getStageColor(stage)}-100 text-${getStageColor(stage)}-700`}
               >
-                {STAGE_LABELS[implantCase.current_stage]}
+                {STAGE_LABELS[stage]}
               </Badge>
               {currentTimeline?.notes && (
                 <span className="text-sm text-muted-foreground">{currentTimeline.notes}</span>
@@ -158,31 +178,14 @@ function ImplantCaseCard({ implantCase }: { implantCase: any }) {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span className="text-muted-foreground">整体进度</span>
-                <span className="font-medium">{implantCase.progress_percentage}%</span>
+                <span className="font-medium">{progress}%</span>
               </div>
               <div className="flex-1 bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-purple-500 h-2 rounded-full transition-all"
-                  style={{ width: `${implantCase.progress_percentage}%` }}
+                  style={{ width: `${progress}%` }}
                 />
               </div>
-            </div>
-
-            {/* Timeline Preview */}
-            <div className="flex gap-2 pt-2">
-              {implantCase.timeline.slice(0, 5).map((stage: any, idx: number) => (
-                <div
-                  key={idx}
-                  className={`flex-1 h-2 rounded ${
-                    stage.status === 'completed'
-                      ? 'bg-green-500'
-                      : stage.status === 'current'
-                      ? 'bg-purple-500'
-                      : 'bg-gray-200'
-                  }`}
-                  title={stage.stage_name}
-                />
-              ))}
             </div>
 
             {/* Dates */}
@@ -208,6 +211,22 @@ function ImplantCaseCard({ implantCase }: { implantCase: any }) {
                 )}
               </div>
             )}
+
+            <div className="flex items-center gap-2 pt-2">
+              <span className="text-sm text-muted-foreground">阶段</span>
+              <select
+                className="text-sm border rounded-md px-2 py-1"
+                value={stage}
+                onChange={(e) => handleStageChange(e.target.value)}
+              >
+                {stageOptions.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">本地预览，未保存</span>
+            </div>
 
             {/* Bone Quality */}
             {implantCase.bone_quality && (

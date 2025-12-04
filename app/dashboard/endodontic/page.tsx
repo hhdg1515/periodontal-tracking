@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Syringe, Calendar, Clock, Sparkles, Activity } from 'lucide-react';
+import { Syringe, Calendar, Clock, Sparkles, Activity, ArrowRight } from 'lucide-react';
 import {
   DEMO_ENDODONTIC_CASES,
   DEMO_ENDODONTIC_STATS,
@@ -22,71 +22,134 @@ export default function EndodonticPage() {
   const activeCases = DEMO_ENDODONTIC_CASES.filter(c =>
     c.status === 'in_progress' || c.status === 'diagnosis'
   );
+  const diagnosisCases = DEMO_ENDODONTIC_CASES.filter(c => c.status === 'diagnosis').length;
+  const scheduledVisits = upcomingVisits.length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Syringe className="h-8 w-8 text-orange-500" />
-            根管治疗管理
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            统筹牙髓诊断、治疗进度与复诊安排
-          </p>
-        </div>
-        <Button className="bg-orange-500 hover:bg-orange-600">
-          <Sparkles className="mr-2 h-4 w-4" />
-          新建根管病例
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Syringe className="h-8 w-8 text-blue-600" />
+          根管治疗管理
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          统筹牙髓诊断、治疗进度与复诊安排
+        </p>
       </div>
 
       {/* Stats */}
       <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-orange-200">
+        <Card className="border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总病例</CardTitle>
-            <Syringe className="h-4 w-4 text-orange-500" />
+            <CardTitle className="text-sm font-medium">初诊数</CardTitle>
+            <Syringe className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_cases}</div>
-            <p className="text-xs text-muted-foreground">过去 30 天新增 2 例</p>
+            <div className="text-2xl font-bold">{stats.consultation_count}</div>
+            <p className="text-xs text-muted-foreground">过去30天新增 {stats.monthly_new_consultations} 个</p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200">
+        <Card className="border-indigo-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">活跃治疗</CardTitle>
-            <Activity className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium">复诊数</CardTitle>
+            <Calendar className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active_cases}</div>
-            <p className="text-xs text-muted-foreground">平均完成度 55%</p>
+            <div className="text-2xl font-bold">{stats.followup_count}</div>
+            <p className="text-xs text-muted-foreground">本月约下来的复诊 {stats.monthly_scheduled_followups} 次</p>
           </CardContent>
         </Card>
 
         <Card className="border-green-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">复诊/随访</CardTitle>
+            <CardTitle className="text-sm font-medium">已完成</CardTitle>
             <Clock className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.follow_up_cases}</div>
-            <p className="text-xs text-muted-foreground">含诊断监测 + 复查</p>
+            <div className="text-2xl font-bold">{stats.completed_count}</div>
+            <p className="text-xs text-muted-foreground">本月完成 {stats.monthly_completed} 个</p>
           </CardContent>
         </Card>
 
         <Card className="border-purple-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">成功率</CardTitle>
+            <CardTitle className="text-sm font-medium">{stats.service_specific_metric?.label}</CardTitle>
             <Sparkles className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.success_rate}%</div>
-            <p className="text-xs text-muted-foreground">3 个月复查窗口</p>
+            <div className="text-2xl font-bold">{stats.service_specific_metric?.value}</div>
+            <p className="text-xs text-muted-foreground">{stats.service_specific_metric?.description}</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Link href="/dashboard/endodontic/cases">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Syringe className="h-7 w-7" />
+              </div>
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700">
+                {DEMO_ENDODONTIC_CASES.length} 例
+              </Badge>
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-lg font-semibold text-gray-900">病例列表</h3>
+              <p className="text-sm text-gray-600">查看所有根管治疗进度</p>
+              <p className="text-xs text-blue-700 font-medium">
+                {activeCases.length} 例治疗/诊断中
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/endodontic/cases">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="h-7 w-7" />
+              </div>
+              <Badge variant="secondary" className="bg-indigo-100 text-indigo-700">
+                {scheduledVisits} 个预约
+              </Badge>
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-lg font-semibold text-gray-900">随访与复诊</h3>
+              <p className="text-sm text-gray-600">即将到来的根管治疗行程</p>
+              <p className="text-xs text-indigo-700 font-medium">
+                {diagnosisCases} 例待决策病例
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href={
+            (activeCases[0]?.id || DEMO_ENDODONTIC_CASES[0]?.id)
+              ? `/dashboard/endodontic/cases/${activeCases[0]?.id || DEMO_ENDODONTIC_CASES[0]?.id}`
+              : "/dashboard/endodontic/cases"
+          }
+        >
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-sky-100 text-sky-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Activity className="h-7 w-7" />
+              </div>
+              <ArrowRight className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-lg font-semibold text-gray-900">更新治疗记录</h3>
+              <p className="text-sm text-gray-600">快速进入病例，补充就诊与用药</p>
+              <p className="text-xs text-sky-700 font-medium">
+                支持新增随访、修改下一次预约
+              </p>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Upcoming + AI */}
@@ -94,7 +157,7 @@ export default function EndodonticPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5 text-orange-500" />
+              <Calendar className="h-5 w-5 text-blue-500" />
               即将到来的就诊
             </CardTitle>
             <CardDescription>追踪根管治疗预约与复诊</CardDescription>
@@ -111,7 +174,7 @@ export default function EndodonticPage() {
                     <p className="text-xs text-muted-foreground">{visit.notes}</p>
                   </div>
                   <div className="text-right text-sm">
-                    <p className="font-semibold text-orange-600">
+                    <p className="font-semibold text-blue-600">
                       {new Date(visit.visit_date).toLocaleDateString('zh-CN')}
                     </p>
                     <p className="text-xs text-muted-foreground">
@@ -135,7 +198,7 @@ export default function EndodonticPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-orange-500" />
+              <Sparkles className="h-5 w-5 text-blue-500" />
               AI 影像观察
             </CardTitle>
             <CardDescription>
@@ -146,11 +209,11 @@ export default function EndodonticPage() {
             <div className="space-y-3">
               {DEMO_ENDODONTIC_CASES.filter(c => c.ai_flags && c.ai_flags.length > 0).map(
                 endoCase => (
-                  <div key={endoCase.id} className="rounded-2xl bg-orange-50/80 p-3 shadow-sm">
-                    <p className="text-sm font-semibold text-orange-900">
+                  <div key={endoCase.id} className="rounded-2xl bg-blue-50/80 p-3 shadow-sm">
+                    <p className="text-sm font-semibold text-blue-900">
                       {endoCase.patient_name} · {endoCase.tooth}
                     </p>
-                    <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-orange-800">
+                    <ul className="mt-2 list-disc space-y-1 pl-4 text-sm text-blue-800">
                       {endoCase.ai_flags!.map((flag, idx) => (
                         <li key={idx}>{flag}</li>
                       ))}
@@ -210,7 +273,7 @@ export default function EndodonticPage() {
                 <div className="flex items-center gap-3">
                   <div className="flex-1 h-2 bg-gray-100 rounded-full">
                     <div
-                      className="h-2 rounded-full bg-orange-500 transition-all"
+                      className="h-2 rounded-full bg-blue-500 transition-all"
                       style={{ width: `${endoCase.progress_percentage}%` }}
                     />
                   </div>
@@ -223,13 +286,15 @@ export default function EndodonticPage() {
                   <Link
                     href={`/dashboard/patients/${endoCase.patient_id}?tab=endodontic&context=endodontic`}
                   >
-                    <Button variant="ghost" size="sm" className="text-orange-600 hover:text-orange-700">
+                    <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-700">
                       查看病人
                     </Button>
                   </Link>
-                  <Button variant="outline" size="sm">
-                    更新治疗
-                  </Button>
+                  <Link href={`/dashboard/endodontic/cases/${endoCase.id}`}>
+                    <Button variant="outline" size="sm">
+                      更新治疗
+                    </Button>
+                  </Link>
                 </div>
               </div>
             ))}

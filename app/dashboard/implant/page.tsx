@@ -23,47 +23,48 @@ export default function ImplantDashboardPage() {
   const stats = DEMO_IMPLANT_STATS;
   const activeCases = getActiveCases();
   const recentCases = DEMO_IMPLANT_CASES.slice(0, 3);
+  const planningCases = DEMO_IMPLANT_CASES.filter(
+    implantCase => implantCase.current_stage === 'planning' || implantCase.status === 'planned',
+  ).length;
+  const healingCases = DEMO_IMPLANT_CASES.filter(
+    implantCase => implantCase.current_stage === 'healing',
+  ).length;
+  const completedCases = getCompletedCases().length;
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Wrench className="h-8 w-8 text-purple-500" />
-            种植牙管理
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            管理种植案例、追踪手术进度和愈合情况
-          </p>
-        </div>
-        <Button className="bg-purple-500 hover:bg-purple-600">
-          <Calendar className="mr-2 h-4 w-4" />
-          新建案例
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold flex items-center gap-2">
+          <Wrench className="h-8 w-8 text-purple-500" />
+          种植牙管理
+        </h1>
+        <p className="text-muted-foreground mt-1">
+          管理种植案例、追踪手术进度和愈合情况
+        </p>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card className="border-purple-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总案例数</CardTitle>
+            <CardTitle className="text-sm font-medium">初诊数</CardTitle>
             <Wrench className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_cases}</div>
-            <p className="text-xs text-muted-foreground">本月新增 1 个</p>
+            <div className="text-2xl font-bold">{stats.consultation_count}</div>
+            <p className="text-xs text-muted-foreground">过去30天新增 {stats.monthly_new_consultations} 个</p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-200">
+        <Card className="border-indigo-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">进行中</CardTitle>
-            <TrendingUp className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium">复诊数</CardTitle>
+            <TrendingUp className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.active_cases}</div>
-            <p className="text-xs text-muted-foreground">平均进度 53%</p>
+            <div className="text-2xl font-bold">{stats.followup_count}</div>
+            <p className="text-xs text-muted-foreground">本月约下来的复诊 {stats.monthly_scheduled_followups} 次</p>
           </CardContent>
         </Card>
 
@@ -73,21 +74,96 @@ export default function ImplantDashboardPage() {
             <CheckCircle className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.completed_cases}</div>
-            <p className="text-xs text-muted-foreground">成功率 {stats.success_rate}%</p>
+            <div className="text-2xl font-bold">{stats.completed_count}</div>
+            <p className="text-xs text-muted-foreground">本月完成 {stats.monthly_completed} 个</p>
           </CardContent>
         </Card>
 
         <Card className="border-yellow-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">总种植体</CardTitle>
-            <Wrench className="h-4 w-4 text-yellow-500" />
+            <CardTitle className="text-sm font-medium">{stats.service_specific_metric?.label}</CardTitle>
+            <CheckCircle className="h-4 w-4 text-yellow-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.total_implants}</div>
-            <p className="text-xs text-muted-foreground">单颗/多颗/全口</p>
+            <div className="text-2xl font-bold">{stats.service_specific_metric?.value}</div>
+            <p className="text-xs text-muted-foreground">{stats.service_specific_metric?.description}</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Quick Actions - Simple Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Link href="/dashboard/implant/cases">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Wrench className="h-7 w-7" />
+              </div>
+              <ArrowRight className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-lg font-semibold text-gray-900">案例列表</h3>
+              <p className="text-sm text-gray-600">查看所有种植项目</p>
+              <p className="text-xs text-purple-600 font-medium">
+                {activeCases.length} 个进行中 · {completedCases} 已完成
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <Link href="/dashboard/implant/planning">
+          <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all cursor-pointer group">
+            <div className="flex items-start justify-between">
+              <div className="h-14 w-14 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Calendar className="h-7 w-7" />
+              </div>
+              <ArrowRight className="h-6 w-6 text-gray-400 group-hover:text-gray-600 transition-colors" />
+            </div>
+            <div className="mt-4 space-y-2">
+              <h3 className="text-lg font-semibold text-gray-900">手术规划</h3>
+              <p className="text-sm text-gray-600">CBCT 导板与术前方案</p>
+              <p className="text-xs text-blue-600 font-medium">
+                {planningCases} 个待规划/审核
+              </p>
+            </div>
+          </div>
+        </Link>
+
+        <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all group border border-dashed border-gray-200">
+          <div className="flex items-start justify-between">
+            <div className="h-14 w-14 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <Clock className="h-7 w-7" />
+            </div>
+            <span className="text-xs text-amber-600 bg-amber-50 px-2 py-1 rounded-full font-medium">
+              即将上线
+            </span>
+          </div>
+          <div className="mt-4 space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900">愈合追踪</h3>
+            <p className="text-sm text-gray-600">术后随访、拆线与复查提醒</p>
+            <p className="text-xs text-amber-700 font-medium">
+              {healingCases} 个病例处于愈合期
+            </p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl bg-white p-6 hover:shadow-lg transition-all group border border-dashed border-gray-200">
+          <div className="flex items-start justify-between">
+            <div className="h-14 w-14 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <FileText className="h-7 w-7" />
+            </div>
+            <span className="text-xs text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full font-medium">
+              即将上线
+            </span>
+          </div>
+          <div className="mt-4 space-y-2">
+            <h3 className="text-lg font-semibold text-gray-900">病历报告</h3>
+            <p className="text-sm text-gray-600">一键生成随访与患者报告</p>
+            <p className="text-xs text-emerald-700 font-medium">
+              {completedCases} 份案例可生成报告
+            </p>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -227,46 +303,14 @@ export default function ImplantDashboardPage() {
         </Card>
       </div>
 
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>快速操作</CardTitle>
-          <CardDescription>常用功能快捷入口</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-4">
-            <Link href="/dashboard/implant/cases">
-              <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                <Wrench className="h-6 w-6 text-purple-500" />
-                <span>案例列表</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/implant/planning">
-              <Button variant="outline" className="w-full h-20 flex-col gap-2">
-                <Calendar className="h-6 w-6 text-blue-500" />
-                <span>手术规划</span>
-              </Button>
-            </Link>
-            <Button variant="outline" className="w-full h-20 flex-col gap-2" disabled>
-              <Clock className="h-6 w-6 text-orange-500" />
-              <span>愈合追踪</span>
-            </Button>
-            <Button variant="outline" className="w-full h-20 flex-col gap-2" disabled>
-              <FileText className="h-6 w-6 text-green-500" />
-              <span>病历报告</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Success Rate */}
       <Card className="bg-gradient-to-r from-purple-50 to-indigo-50">
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div className="space-y-2">
-              <h3 className="text-2xl font-bold">成功率 {stats.success_rate}%</h3>
+              <h3 className="text-2xl font-bold">{stats.service_specific_metric?.label} {stats.service_specific_metric?.value}</h3>
               <p className="text-muted-foreground">
-                基于 {stats.total_implants} 颗种植体的临床数据
+                {stats.service_specific_metric?.description}
               </p>
             </div>
             <div className="text-right">

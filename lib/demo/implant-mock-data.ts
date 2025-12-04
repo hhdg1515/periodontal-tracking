@@ -5,6 +5,7 @@ import {
   ImplantComplication,
   calculateStageProgress,
 } from '../types/implant';
+import type { ServiceStats } from '@/lib/types/service-stats';
 
 // =====================================================
 // Mock 种植案例数据
@@ -316,7 +317,22 @@ export const DEMO_COMPLICATIONS: ImplantComplication[] = [
 // Mock 统计数据
 // =====================================================
 
-export const DEMO_IMPLANT_STATS: ImplantStats = {
+export const DEMO_IMPLANT_STATS: ServiceStats = {
+  consultation_count: 4,           // 初诊数：4位新患者
+  followup_count: 9,                // 复诊数：9次回访
+  completed_count: 1,               // 已完成：1个病例
+  monthly_new_consultations: 1,     // 本月新增初诊：1位
+  monthly_scheduled_followups: 3,   // 本月约下来的复诊：3次
+  monthly_completed: 0,             // 本月已完成：0个
+  service_specific_metric: {
+    label: '总预约',
+    value: 13,
+    description: '初诊+复诊总数',
+  },
+};
+
+// 保留旧的类型以兼容现有代码
+export const DEMO_IMPLANT_STATS_LEGACY: ImplantStats = {
   total_cases: 4,
   active_cases: 3,
   completed_cases: 1,

@@ -33,7 +33,9 @@ import {
   DEMO_VISITS,
   DEMO_XRAYS,
   DEMO_PERIODONTAL_CHARTS,
+  DEMO_PERIODONTAL_STATS,
 } from "@/lib/demo/mock-data";
+import { getTotalAppointments } from "@/lib/types/service-stats";
 
 const DEMO_ASSESSMENTS: Record<string, ClinicalAssessment> = {
   "visit-002": {
@@ -150,68 +152,67 @@ export default function PeriodontalTrackingPage() {
 
   return (
     <div className="space-y-8">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">牙周病追踪</h1>
-          <p className="text-muted-foreground mt-1">
-            先查看概览与提醒，再选择病例进入临床/AI 细节
-          </p>
-        </div>
-        <Button
-          className="bg-blue-600 hover:bg-blue-700 text-white"
-          onClick={() => {
-            const firstVisit = DEMO_VISITS[0];
-            handleCaseSelect(firstVisit.patientId, firstVisit.id);
-          }}
-        >
-          <Sparkles className="mr-2 h-4 w-4" />
-          快速载入示例
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">牙周病追踪</h1>
+        <p className="text-muted-foreground mt-1">
+          先查看概览与提醒，再选择病例进入临床/AI 细节
+        </p>
       </div>
 
       {/* Overview stats */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-white/90 shadow-sm">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card className="bg-white/90 shadow-sm border-blue-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Users className="h-4 w-4 text-blue-500" />
-              活跃患者
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">初诊数</CardTitle>
+            <Users className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalPatients}</div>
+            <div className="text-2xl font-bold">{DEMO_PERIODONTAL_STATS.consultation_count}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              本月回诊率 82%
+              过去30天新增 {DEMO_PERIODONTAL_STATS.monthly_new_consultations} 个
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 shadow-sm">
+        <Card className="bg-white/90 shadow-sm border-indigo-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-indigo-500" />
-              已记录就诊
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">复诊数</CardTitle>
+            <Calendar className="h-4 w-4 text-indigo-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalVisits}</div>
+            <div className="text-2xl font-bold">{DEMO_PERIODONTAL_STATS.followup_count}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              6 个月内 +24%
+              本月约下来的复诊 {DEMO_PERIODONTAL_STATS.monthly_scheduled_followups} 次
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white/90 shadow-sm">
+        <Card className="bg-white/90 shadow-sm border-green-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium flex items-center gap-2">
-              <Activity className="h-4 w-4 text-green-500" />
-              X 光对比分析
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">已完成</CardTitle>
+            <ShieldCheck className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold">{totalComparisons}</div>
+            <div className="text-2xl font-bold">{DEMO_PERIODONTAL_STATS.completed_count}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              AI 标记异常 3 例
+              本月完成 {DEMO_PERIODONTAL_STATS.monthly_completed} 个
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white/90 shadow-sm border-purple-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              {DEMO_PERIODONTAL_STATS.service_specific_metric?.label}
+            </CardTitle>
+            <Activity className="h-4 w-4 text-purple-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {DEMO_PERIODONTAL_STATS.service_specific_metric?.value}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {DEMO_PERIODONTAL_STATS.service_specific_metric?.description}
             </p>
           </CardContent>
         </Card>

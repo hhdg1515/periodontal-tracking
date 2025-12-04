@@ -1,9 +1,11 @@
 'use client';
 
 import { useParams } from 'next/navigation';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { ArrowLeft, CheckCircle, Clock, Circle, DollarSign, Image, FileText } from 'lucide-react';
 import Link from 'next/link';
 import { getDemoImplantCaseById } from '@/lib/demo/implant-mock-data';
@@ -18,15 +20,86 @@ import {
 
 export default function ImplantCaseDetailPage() {
   const params = useParams();
-  const implantCase = getDemoImplantCaseById(params.id as string);
+  const baseCase = getDemoImplantCaseById(params.id as string);
 
-  if (!implantCase) {
+  const [caseData, setCaseData] = useState(baseCase);
+
+  if (!caseData) {
     return (
       <div className="flex items-center justify-center h-96">
         <p className="text-muted-foreground">案例未找到</p>
       </div>
     );
   }
+
+  const stageOptions = [
+    { value: 'planning', label: '手术规划' },
+    { value: 'surgery', label: '手术植入' },
+    { value: 'healing', label: '愈合期' },
+    { value: 'restoration', label: '最终修复' },
+  ] as const;
+  const progressMap: Record<string, number> = {
+    planning: 25,
+    surgery: 50,
+    healing: 75,
+    restoration: 100,
+  };
+
+  const handleStageChange = (nextStage: string) => {
+    setCaseData((prev: any) => {
+      if (!prev) return prev;
+      const updatedTimeline = prev.timeline.map((item: any) => {
+        if (item.stage === nextStage) return { ...item, status: 'current' };
+        const stageOrder = stageOptions.map(s => s.value);
+        const currentIdx = stageOrder.indexOf(nextStage);
+        const itemIdx = stageOrder.indexOf(item.stage);
+        if (itemIdx !== -1) {
+          if (itemIdx < currentIdx) return { ...item, status: 'completed' };
+          if (itemIdx > currentIdx) return { ...item, status: 'upcoming' };
+        }
+        return item;
+      });
+      const progressMap: Record<string, number> = {
+        planning: 25,
+        surgery: 50,
+        healing: 75,
+        restoration: 100,
+      };
+      return {
+        ...prev,
+        current_stage: nextStage,
+        timeline: updatedTimeline,
+        progress_percentage: progressMap[nextStage] ?? prev.progress_percentage,
+      };
+    });
+  };
+
+  const handleTimelineChange = (stageValue: string, changes: any) => {
+    setCaseData((prev: any) => {
+      if (!prev) return prev;
+      const updatedTimeline = prev.timeline.map((item: any) => {
+        if (item.stage !== stageValue) {
+          if (changes.status === 'current' && item.status === 'current') {
+            return { ...item, status: 'completed' };
+          }
+          return item;
+        }
+        return { ...item, ...changes };
+      });
+      const next: any = { ...prev, timeline: updatedTimeline };
+      if (changes.status === 'current') {
+        next.current_stage = stageValue;
+        next.progress_percentage = progressMap[stageValue] ?? prev.progress_percentage;
+      }
+      return next;
+    });
+  };
+
+  const formatDateInput = (value?: string) => {
+    if (!value) return '';
+    const iso = new Date(value).toISOString();
+    return iso.slice(0, 10);
+  };
 
   return (
     <div className="space-y-6">
@@ -38,19 +111,30 @@ export default function ImplantCaseDetailPage() {
           </Button>
         </Link>
         <div className="flex-1">
-          <h1 className="text-3xl font-bold">{implantCase.patient_name}</h1>
+          <h1 className="text-3xl font-bold">{caseData.patient_name}</h1>
           <p className="text-muted-foreground">种植案例详情</p>
         </div>
         <Badge
           variant="secondary"
-          className={`bg-${STATUS_COLORS[implantCase.status]}-100 text-${STATUS_COLORS[implantCase.status]}-700`}
+          className={`bg-${STATUS_COLORS[caseData.status]}-100 text-${STATUS_COLORS[caseData.status]}-700`}
         >
-          {STATUS_LABELS[implantCase.status]}
+          {STATUS_LABELS[caseData.status]}
         </Badge>
-        <Link href={`/dashboard/patients/${implantCase.patient_id}?tab=implant&context=implant`}>
+        <Link href={`/dashboard/patients/${caseData.patient_id}?tab=implant&context=implant`}>
           <Button variant="outline">查看病人</Button>
         </Link>
-        <Button className="bg-purple-500 hover:bg-purple-600">更新进度</Button>
+        <select
+          className="text-sm border rounded-md px-2 py-1"
+          value={caseData.current_stage}
+          onChange={(e) => handleStageChange(e.target.value)}
+          aria-label="选择当前阶段"
+        >
+          {stageOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -65,39 +149,39 @@ export default function ImplantCaseDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">案例类型</p>
-                  <p className="font-medium">{TYPE_LABELS[implantCase.case_type]}</p>
+                  <p className="font-medium">{TYPE_LABELS[caseData.case_type]}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">种植体品牌</p>
-                  <p className="font-medium">{BRAND_LABELS[implantCase.implant_brand]}</p>
+                  <p className="font-medium">{BRAND_LABELS[caseData.implant_brand]}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">种植数量</p>
-                  <p className="font-medium">{implantCase.implant_count} 颗</p>
+                  <p className="font-medium">{caseData.implant_count} 颗</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">牙位</p>
-                  <p className="font-medium">{implantCase.tooth_positions.join(', ')}</p>
+                  <p className="font-medium">{caseData.tooth_positions.join(', ')}</p>
                 </div>
               </div>
 
-              {implantCase.surgeon_name && (
+              {caseData.surgeon_name && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">主刀医生</p>
-                  <p className="font-medium">{implantCase.surgeon_name}</p>
+                  <p className="font-medium">{caseData.surgeon_name}</p>
                 </div>
               )}
 
               {/* Bone Quality */}
-              {implantCase.bone_quality && (
+              {caseData.bone_quality && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">骨质评估</p>
                   <div className="flex gap-2">
-                    <Badge variant="outline">{implantCase.bone_quality}</Badge>
-                    {implantCase.bone_grafting_needed && (
+                    <Badge variant="outline">{caseData.bone_quality}</Badge>
+                    {caseData.bone_grafting_needed && (
                       <Badge variant="outline" className="bg-yellow-50">需要植骨</Badge>
                     )}
-                    {implantCase.sinus_lift_needed && (
+                    {caseData.sinus_lift_needed && (
                       <Badge variant="outline" className="bg-orange-50">需要上颌窦提升</Badge>
                     )}
                   </div>
@@ -113,7 +197,7 @@ export default function ImplantCaseDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
-                {implantCase.timeline.map((stage: any, idx: number) => {
+                {caseData.timeline.map((stage: any, idx: number) => {
                   const isCompleted = stage.status === 'completed';
                   const isCurrent = stage.status === 'current';
                   const isUpcoming = stage.status === 'upcoming';
@@ -129,7 +213,7 @@ export default function ImplantCaseDetailPage() {
                         ) : (
                           <Circle className="h-6 w-6 text-gray-300" />
                         )}
-                        {idx < implantCase.timeline.length - 1 && (
+                        {idx < caseData.timeline.length - 1 && (
                           <div className={`w-0.5 h-12 mt-2 ${isCompleted ? 'bg-green-500' : 'bg-gray-200'}`} />
                         )}
                       </div>
@@ -150,24 +234,59 @@ export default function ImplantCaseDetailPage() {
                           </Badge>
                         </div>
 
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          {stage.planned_date && (
-                            <p>
-                              计划日期: {new Date(stage.planned_date).toLocaleDateString('zh-CN')}
-                            </p>
-                          )}
-                          {stage.actual_date && (
-                            <p>
-                              实际日期: {new Date(stage.actual_date).toLocaleDateString('zh-CN')}
-                            </p>
-                          )}
-                          {stage.duration_weeks && (
-                            <p>预计时长: {stage.duration_weeks} 周</p>
-                          )}
-                          {stage.notes && (
-                            <p className="text-base mt-2">{stage.notes}</p>
-                          )}
-                        </div>
+                <div className="space-y-3 text-sm text-muted-foreground">
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="space-y-1">
+                      <span className="block text-xs text-gray-500">计划日期</span>
+                      <Input
+                        type="date"
+                        value={formatDateInput(stage.planned_date)}
+                        onChange={(e) =>
+                          handleTimelineChange(stage.stage, { planned_date: e.target.value })
+                        }
+                      />
+                    </label>
+                    <label className="space-y-1">
+                      <span className="block text-xs text-gray-500">实际日期</span>
+                      <Input
+                        type="date"
+                        value={formatDateInput(stage.actual_date)}
+                        onChange={(e) =>
+                          handleTimelineChange(stage.stage, { actual_date: e.target.value })
+                        }
+                      />
+                    </label>
+                  </div>
+                  {stage.duration_weeks && (
+                    <p>预计时长: {stage.duration_weeks} 周</p>
+                  )}
+                  <div className="space-y-1">
+                    <span className="block text-xs text-gray-500">状态</span>
+                    <select
+                      className="text-sm border rounded-md px-2 py-1"
+                      value={stage.status}
+                      onChange={(e) =>
+                        handleTimelineChange(stage.stage, { status: e.target.value })
+                      }
+                    >
+                      <option value="completed">已完成</option>
+                      <option value="current">进行中</option>
+                      <option value="upcoming">待进行</option>
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <span className="block text-xs text-gray-500">备注</span>
+                    <textarea
+                      className="w-full rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
+                      rows={2}
+                      value={stage.notes || ''}
+                      onChange={(e) =>
+                        handleTimelineChange(stage.stage, { notes: e.target.value })
+                      }
+                      placeholder="填写规划/术中要点"
+                    />
+                  </div>
+                </div>
                       </div>
                     </div>
                   );
@@ -177,7 +296,7 @@ export default function ImplantCaseDetailPage() {
           </Card>
 
           {/* Images */}
-          {(implantCase.cbct_scans?.length > 0 || implantCase.photos?.length > 0) && (
+          {(caseData.cbct_scans?.length > 0 || caseData.photos?.length > 0) && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -186,11 +305,11 @@ export default function ImplantCaseDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {implantCase.cbct_scans?.length > 0 && (
+                {caseData.cbct_scans?.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-2">CBCT 扫描</p>
                     <div className="grid grid-cols-2 gap-4">
-                      {implantCase.cbct_scans.map((scan: string, idx: number) => (
+                      {caseData.cbct_scans.map((scan: string, idx: number) => (
                         <div
                           key={idx}
                           className="aspect-video rounded-lg overflow-hidden border"
@@ -206,11 +325,11 @@ export default function ImplantCaseDetailPage() {
                   </div>
                 )}
 
-                {implantCase.photos?.length > 0 && (
+                {caseData.photos?.length > 0 && (
                   <div>
                     <p className="text-sm font-medium mb-2">临床照片</p>
                     <div className="grid grid-cols-3 gap-4">
-                      {implantCase.photos.map((photo: string, idx: number) => (
+                      {caseData.photos.map((photo: string, idx: number) => (
                         <div
                           key={idx}
                           className="aspect-square rounded-lg overflow-hidden border"
@@ -230,7 +349,7 @@ export default function ImplantCaseDetailPage() {
           )}
 
           {/* Notes */}
-          {implantCase.notes && (
+          {caseData.notes && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -239,7 +358,7 @@ export default function ImplantCaseDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-base">{implantCase.notes}</p>
+                <p className="text-base">{caseData.notes}</p>
               </CardContent>
             </Card>
           )}
@@ -255,7 +374,7 @@ export default function ImplantCaseDetailPage() {
             <CardContent className="space-y-4">
               <div className="text-center">
                 <div className="text-4xl font-bold text-purple-600 mb-2">
-                  {implantCase.progress_percentage}%
+                  {caseData.progress_percentage}%
                 </div>
                 <p className="text-sm text-muted-foreground">整体完成度</p>
               </div>
@@ -263,20 +382,20 @@ export default function ImplantCaseDetailPage() {
               <div className="flex-1 bg-gray-200 rounded-full h-3">
                 <div
                   className="bg-purple-500 h-3 rounded-full transition-all"
-                  style={{ width: `${implantCase.progress_percentage}%` }}
+                  style={{ width: `${caseData.progress_percentage}%` }}
                 />
               </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">当前阶段</span>
-                  <span className="font-medium">{STAGE_LABELS[implantCase.current_stage]}</span>
+                  <span className="font-medium">{STAGE_LABELS[caseData.current_stage]}</span>
                 </div>
-                {implantCase.expected_completion && (
+                {caseData.expected_completion && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">预计完成</span>
                     <span className="font-medium">
-                      {new Date(implantCase.expected_completion).toLocaleDateString('zh-CN')}
+                      {new Date(caseData.expected_completion).toLocaleDateString('zh-CN')}
                     </span>
                   </div>
                 )}

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -9,7 +10,19 @@ import { TrendingUp, Image as ImageIcon, CheckCircle, Calendar } from 'lucide-re
 import { DEMO_BEFORE_AFTER, DEMO_TREATMENT_PLANS } from '@/lib/demo/cosmetic-mock-data';
 
 export default function BeforeAfterPage() {
+  const searchParams = useSearchParams();
+  const treatmentFilter = searchParams.get('treatment');
   const [selectedComparison, setSelectedComparison] = useState<any>(null);
+
+  // 根据 URL 参数筛选对比照片
+  const filteredComparisons = treatmentFilter
+    ? DEMO_BEFORE_AFTER.filter(comp => comp.treatment_plan_id === treatmentFilter)
+    : DEMO_BEFORE_AFTER;
+
+  // 获取筛选的治疗方案信息
+  const filteredTreatment = treatmentFilter
+    ? DEMO_TREATMENT_PLANS.find(p => p.id === treatmentFilter)
+    : null;
 
   return (
     <div className="space-y-6">
@@ -23,6 +36,20 @@ export default function BeforeAfterPage() {
           <p className="text-muted-foreground mt-1">
             展示治疗前后的对比效果，提升患者信心
           </p>
+          {filteredTreatment && (
+            <div className="mt-2 flex items-center gap-2">
+              <Badge variant="secondary" className="bg-green-100 text-green-700">
+                正在查看：{filteredTreatment.patient_name} - {filteredTreatment.treatment_name}
+              </Badge>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => window.location.href = '/dashboard/cosmetic/before-after'}
+              >
+                查看全部
+              </Button>
+            </div>
+          )}
         </div>
         <Button className="bg-green-500 hover:bg-green-600">
           <ImageIcon className="mr-2 h-4 w-4" />
@@ -38,7 +65,7 @@ export default function BeforeAfterPage() {
             <ImageIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{DEMO_BEFORE_AFTER.length}</div>
+            <div className="text-2xl font-bold">{filteredComparisons.length}</div>
           </CardContent>
         </Card>
 
@@ -70,7 +97,7 @@ export default function BeforeAfterPage() {
             <TrendingUp className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{DEMO_BEFORE_AFTER.length}</div>
+            <div className="text-2xl font-bold">{filteredComparisons.length}</div>
           </CardContent>
         </Card>
       </div>
@@ -82,9 +109,25 @@ export default function BeforeAfterPage() {
         </TabsList>
 
         <TabsContent value="gallery" className="space-y-4">
+          {/* 如果筛选后没有结果 */}
+          {filteredComparisons.length === 0 && (
+            <Card className="border-dashed">
+              <CardContent className="py-12 text-center">
+                <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">
+                  该治疗还没有上传效果对比照片
+                </p>
+                <Button variant="outline" onClick={() => window.location.href = '/dashboard/cosmetic/before-after'}>
+                  查看全部对比
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Gallery Grid */}
-          <div className="grid gap-6 md:grid-cols-2">
-            {DEMO_BEFORE_AFTER.map(comparison => (
+          {filteredComparisons.length > 0 && (
+            <div className="grid gap-6 md:grid-cols-2">
+              {filteredComparisons.map(comparison => (
               <Card
                 key={comparison.id}
                 className="hover:shadow-lg transition-shadow cursor-pointer"
@@ -164,20 +207,23 @@ export default function BeforeAfterPage() {
                 </CardContent>
               </Card>
             ))}
-          </div>
+            </div>
+          )}
 
           {/* Add more comparisons placeholder */}
-          <Card className="border-dashed">
-            <CardContent className="py-12 text-center">
-              <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground mb-4">
-                还没有更多对比照片？完成更多治疗后上传效果对比
-              </p>
-              <Button variant="outline">
-                查看进行中的治疗
-              </Button>
-            </CardContent>
-          </Card>
+          {filteredComparisons.length > 0 && !treatmentFilter && (
+            <Card className="border-dashed">
+              <CardContent className="py-12 text-center">
+                <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <p className="text-muted-foreground mb-4">
+                  还没有更多对比照片？完成更多治疗后上传效果对比
+                </p>
+                <Button variant="outline">
+                  查看进行中的治疗
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </TabsContent>
 
         <TabsContent value="slideshow">
@@ -282,10 +328,6 @@ export default function BeforeAfterPage() {
               {/* Actions */}
               <div className="flex gap-2 justify-end">
                 <Button variant="outline">下载对比图</Button>
-                <Button variant="outline">分享给患者</Button>
-                <Button className="bg-green-500 hover:bg-green-600">
-                  用于营销展示
-                </Button>
               </div>
             </CardContent>
           </Card>

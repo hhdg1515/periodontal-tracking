@@ -1,4 +1,5 @@
 import { PeriodontalMeasurementEntry } from "@/lib/types/clinical";
+import type { ServiceStats } from '@/lib/types/service-stats';
 
 /**
  * Demo Mock Data
@@ -309,3 +310,21 @@ export function getDemoPatientWithXRays(patientId: string) {
 export function getDemoPeriodontalChartByVisitId(visitId: string) {
   return DEMO_PERIODONTAL_CHARTS[visitId] || DEMO_PERIODONTAL_CHARTS.default;
 }
+
+/**
+ * 牙周病统计数据
+ * 使用统一的ServiceStats结构
+ */
+export const DEMO_PERIODONTAL_STATS: ServiceStats = {
+  consultation_count: 3,           // 初诊数：3位新患者
+  followup_count: 6,                // 复诊数：6次回访
+  completed_count: 2,               // 已完成：2个病例
+  monthly_new_consultations: 1,     // 本月新增初诊：1位
+  monthly_scheduled_followups: 2,   // 本月约下来的复诊：2次
+  monthly_completed: 1,             // 本月已完成：1个
+  service_specific_metric: {
+    label: '总预约',
+    value: 9,                       // 初诊3 + 复诊6 = 9
+    description: '初诊+复诊总数',
+  },
+};
